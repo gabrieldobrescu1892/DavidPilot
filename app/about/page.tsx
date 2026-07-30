@@ -9,7 +9,7 @@ const copy = {
   ro: {
     nav: { home: "Acasă", product: "Produs", about: "Despre fondator", demo: "Programează un demo" },
     hero: {
-      kicker: "FONDATOR • CEO • ENGINEERING LEADER",
+      kicker: "FONDATOR & CEO DAVIDPILOT",
       title: "Tehnologia trebuie să simplifice munca, nu să o complice.",
       intro: "Sunt Gabriel Dobrescu, inginer și lider tehnic. Am fondat DavidPilot pentru a ajuta afacerile să folosească automatizarea AI într-un mod practic, sigur și ușor de înțeles.",
       cta: "Discută direct cu mine",
@@ -18,9 +18,9 @@ const copy = {
       kicker: "POVESTEA MEA",
       title: "De la infrastructură și DevOps la automatizare AI.",
       paragraphs: [
-        "Cu peste un deceniu de experiență în software engineering, cloud, DevOps, platform engineering și engineering management, am proiectat și coordonat platforme enterprise unde fiabilitatea, securitatea și scalabilitatea sunt esențiale.",
-        "Ca Engineering Manager, cred că tehnologia trebuie să rezolve probleme de business, nu să creeze altele. Am condus echipe de inginerie, am îmbunătățit procese operaționale și am automatizat sisteme critice folosite în producție.",
-        "Am fondat DaviPilot AI deoarece am văzut cât timp pierd companiile cu activități repetitive. Astăzi combinăm practici de inginerie enterprise cu AI modern pentru a construi automatizări sigure, scalabile și ușor de integrat în procesele existente.",
+        "Cariera mea a fost construită în jurul sistemelor care trebuie să funcționeze corect, constant și la scară. Am lucrat în inginerie software, Linux, cloud și DevOps, apoi am trecut către coordonarea echipelor tehnice și a serviciilor critice.",
+        "În companiile mari am văzut cât timp se pierde în activități repetitive, transferuri manuale de informații și conversații care nu ajung rapid la persoana potrivită. În același timp, am văzut că multe soluții AI sunt prezentate mai complicat decât este necesar.",
+        "DavidPilot a apărut din dorința de a închide această distanță. Construim automatizări care răspund clienților, califică solicitări, programează întâlniri și conectează procesele existente, fără ca afacerea să fie obligată să își schimbe complet modul de lucru.",
       ],
     },
     principles: {
@@ -49,12 +49,19 @@ const copy = {
       text: "Începem cu o problemă concretă, construim o soluție ușor de măsurat și o extindem doar atunci când produce valoare.",
       button: "Programează o discuție",
     },
+    contact: {
+      kicker: "CONTACT DIRECT",
+      title: "Hai să discutăm despre ce poate automatiza AI în afacerea ta.",
+      emailLabel: "Email",
+      phoneLabel: "Telefon / WhatsApp",
+      whatsapp: "Scrie-mi pe WhatsApp",
+    },
     footer: "Automatizare AI construită cu experiență tehnică.",
   },
   en: {
     nav: { home: "Home", product: "Product", about: "About the founder", demo: "Book a demo" },
     hero: {
-      kicker: "FOUNDER • CEO • ENGINEERING LEADER",
+      kicker: "FOUNDER & CEO OF DAVIDPILOT",
       title: "Technology should simplify work, not make it harder.",
       intro: "I’m Gabriel Dobrescu, an engineer and technical leader. I founded DavidPilot to help businesses use AI automation in a practical, secure and understandable way.",
       cta: "Talk directly with me",
@@ -63,9 +70,9 @@ const copy = {
       kicker: "MY STORY",
       title: "From infrastructure and DevOps to AI automation.",
       paragraphs: [
-        "With more than a decade of experience in software engineering, cloud infrastructure, DevOps, platform engineering and engineering leadership, I have designed, built and led enterprise technology platforms where reliability, security and scalability are essential.",
-        "As an Engineering Manager, I believe technology should solve business problems, not create new ones. Throughout my career I have led engineering teams, improved operational excellence and automated complex processes used in production environments.",
-        "I founded DaviPilot AI because I saw businesses spending too much time on repetitive work. Today we combine enterprise engineering practices with modern AI to build secure, scalable automations that integrate seamlessly into existing business processes.",
+        "My career has been built around systems that need to operate reliably, consistently and at scale. I worked across software engineering, Linux, cloud and DevOps before moving into the leadership of technical teams and critical services.",
+        "Inside large organizations, I saw how much time is lost to repetitive work, manual handoffs and customer conversations that do not reach the right person quickly. I also saw many AI products being presented as more complicated than they need to be.",
+        "DavidPilot was created to close that gap. We build automations that answer customers, qualify inquiries, schedule meetings and connect existing processes, without forcing a business to rebuild the way it works.",
       ],
     },
     principles: {
@@ -93,6 +100,13 @@ const copy = {
       title: "Make AI automation accessible to businesses that do not need another complicated IT project.",
       text: "We begin with a concrete problem, build a solution that is easy to measure and expand it only when it creates value.",
       button: "Book a conversation",
+    },
+    contact: {
+      kicker: "DIRECT CONTACT",
+      title: "Let’s talk about what AI can automate in your business.",
+      emailLabel: "Email",
+      phoneLabel: "Phone / WhatsApp",
+      whatsapp: "Message me on WhatsApp",
     },
     footer: "AI automation built on technical experience.",
   },
@@ -140,7 +154,33 @@ export default function AboutPage() {
 
       <section className="about-mission"><div className="container"><span className="kicker">{t.mission.kicker}</span><h2>{t.mission.title}</h2><p>{t.mission.text}</p><a className="button light" href="mailto:gabriel@davidpilot.com?subject=DavidPilot automation discussion">{t.mission.button} →</a></div></section>
 
-      <footer className="footer container"><Logo/><p>© 2026 DavidPilot. {t.footer}</p><a href="mailto:gabriel@davidpilot.com">gabriel@davidpilot.com</a></footer>
+      <section className="about-contact">
+        <div className="container">
+          <div className="about-heading contact-heading">
+            <span className="kicker">{t.contact.kicker}</span>
+            <h2>{t.contact.title}</h2>
+          </div>
+          <div className="contact-grid">
+            <a className="contact-card" href="mailto:gabriel@davidpilot.com?subject=DavidPilot discussion">
+              <span>{t.contact.emailLabel}</span>
+              <strong>gabriel@davidpilot.com</strong>
+              <em>→</em>
+            </a>
+            <a className="contact-card" href="tel:+40740985987">
+              <span>{t.contact.phoneLabel}</span>
+              <strong>+40 740 985 987</strong>
+              <em>→</em>
+            </a>
+            <a className="contact-card whatsapp-card" href="https://wa.me/40740985987" target="_blank" rel="noreferrer">
+              <span>WhatsApp</span>
+              <strong>{t.contact.whatsapp}</strong>
+              <em>→</em>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <footer className="footer container"><Logo/><p>© 2026 DavidPilot. {t.footer}</p><div className="footer-contact"><a href="mailto:gabriel@davidpilot.com">gabriel@davidpilot.com</a><a href="tel:+40740985987">+40 740 985 987</a></div></footer>
     </main>
   );
 }
