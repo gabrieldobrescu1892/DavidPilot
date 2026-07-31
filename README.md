@@ -1,28 +1,25 @@
-# DavidPilot v2
+# DAVIDPILOT V2 — Enterprise AI Engineering
 
-Premium Next.js landing page for davidpilot.com.
+Premium bilingual Next.js website for DavidPilot.
 
-## Local development
+## Included
+- Premium responsive homepage
+- English / Romanian language switcher (saved in localStorage)
+- Solutions, About, Resources and Contact pages
+- OpenAI consultant chat using the existing `/api/chat` route
+- Supabase lead capture using the existing `/api/leads` route
+- Existing admin dashboard and authentication
+- Sitemap, robots and Open Graph metadata
 
-```bash
-npm install
-npm run dev
-```
+## Vercel environment variables
+Keep the existing values configured in Vercel:
+- `OPENAI_API_KEY`
+- `OPENAI_CHAT_MODEL`
+- `SUPABASE_URL`
+- `SUPABASE_SECRET_KEY`
+- `ADMIN_PASSWORD`
+- `ADMIN_SESSION_SECRET`
+- `RESEND_API_KEY` (when email notifications are enabled)
 
-Open http://localhost:3000
-
-## Deploy through GitHub + Vercel
-
-1. Replace the files in the existing `DavidPilot` GitHub repository with the contents of this project.
-2. Commit directly to `main`.
-3. Vercel will detect Next.js and redeploy automatically.
-4. If Vercel asks for a framework preset, select **Next.js**.
-5. Leave the build command and output directory on their defaults.
-
-## Current demo
-
-The interactive demo is front-end only. The next sprint will connect it to:
-- an AI endpoint
-- lead capture
-- Google Calendar
-- email notifications
+## Deploy
+Upload the repository contents to GitHub. `package.json` must remain at the repository root. Vercel Root Directory should be empty or `./`.

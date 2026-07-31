@@ -1,26 +1,8 @@
 {
   "name": "davidpilot-v2",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "motion": "^12.42.1",
-    "next": "latest",
-    "react": "latest",
-    "react-dom": "latest"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "latest",
-    "@types/node": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "postcss": "latest",
-    "tailwindcss": "latest",
-    "typescript": "^6.0.2"
-  }
+  "scripts": {"dev":"next dev","build":"next build","start":"next start"},
+  "dependencies": {"next":"latest","react":"latest","react-dom":"latest"},
+  "devDependencies": {"@types/node":"latest","@types/react":"latest","@types/react-dom":"latest","typescript":"latest"}
 }
