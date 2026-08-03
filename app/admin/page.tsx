@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import "./admin.css";
 
@@ -160,6 +161,7 @@ export default function AdminPage() {
 
   return (
     <main className="admin-shell">
+      <nav className="admin-nav"><Link className="active" href="/admin">Lead Cockpit</Link><Link href="/admin/copy-studio">AI Copy Studio</Link></nav>
       <header>
         <div>
           <span className="eyebrow">DAVIDPILOT · SALES INTELLIGENCE</span>

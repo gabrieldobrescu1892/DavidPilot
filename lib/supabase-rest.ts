@@ -125,3 +125,43 @@ export async function updateLead(
     body: JSON.stringify(patch),
   });
 }
+
+
+export type CopyDraft = {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  title: string;
+  content_type: string;
+  language: "en" | "ro";
+  tone: string | null;
+  audience: string | null;
+  goal: string | null;
+  topic: string | null;
+  call_to_action: string | null;
+  output: string;
+  lead_id: string | null;
+  status: string;
+};
+
+export async function insertCopyDraft(
+  draft: Omit<CopyDraft, "id" | "created_at" | "updated_at">
+) {
+  const response = await supabaseFetch("copy_drafts", {
+    method: "POST",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify(draft),
+  });
+  const rows = (await response.json()) as CopyDraft[];
+  return rows[0] ?? null;
+}
+
+export async function listCopyDrafts() {
+  const params = new URLSearchParams({
+    select: "*",
+    order: "created_at.desc",
+    limit: "50",
+  });
+  const response = await supabaseFetch(`copy_drafts?${params.toString()}`);
+  return (await response.json()) as CopyDraft[];
+}
