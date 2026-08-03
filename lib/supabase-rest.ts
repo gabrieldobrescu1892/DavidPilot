@@ -22,6 +22,17 @@ export type StoredLead = {
   conversation: Array<{ sender: "ai" | "user"; text: string }>;
   status: LeadStatus;
   notes: string | null;
+  industry: string | null;
+  company_size: string | null;
+  urgency: "low" | "medium" | "high" | null;
+  buying_intent: "low" | "medium" | "high" | null;
+  ai_maturity: "early" | "developing" | "advanced" | null;
+  estimated_value_min: number | null;
+  estimated_value_max: number | null;
+  recommended_service: string | null;
+  ai_summary: string | null;
+  next_action: string | null;
+  last_activity: string | null;
 };
 
 function config() {
@@ -95,7 +106,7 @@ export async function listLeads(options?: {
     if (safe) {
       params.set(
         "or",
-        `(name.ilike.*${safe}*,company.ilike.*${safe}*,email.ilike.*${safe}*,phone.ilike.*${safe}*)`
+        `(name.ilike.*${safe}*,company.ilike.*${safe}*,email.ilike.*${safe}*,phone.ilike.*${safe}*,industry.ilike.*${safe}*,recommended_service.ilike.*${safe}*)`
       );
     }
   }
