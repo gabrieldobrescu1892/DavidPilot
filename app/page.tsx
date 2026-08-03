@@ -1,994 +1,115 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import { BookingButton, PageFrame } from "../components/SiteShell";
 
-type Message = {
-  sender: "ai" | "user";
-  text: string;
-};
-
-type LeadData = {
-  business: string | null;
-  weeklyInquiries: string | null;
-  score: number | null;
-  estimatedTimeSaved: string | null;
-  qualified: boolean;
-};
-
-type ChatResponse = {
-  message: string;
-  lead: LeadData;
-};
-
-type Language = "ro" | "en";
-
-const translations = {
-  ro: {
-    navigation: {
-      product: "Produs",
-      industries: "Industrii",
-      pricing: "Prețuri",
-      about: "Despre fondator",
-      demo: "Programează un demo",
-    },
-    hero: {
-      eyebrow: "Angajat AI pentru afacerea ta",
-      titleStart: "Angajează primul tău",
-      titleHighlight: "angajat AI.",
-      description:
-        "DavidPilot răspunde instant clienților, califică lead-uri și programează întâlniri 24/7, astfel încât tu și echipa ta să vă concentrați pe dezvoltarea afacerii.",
-      problemStrong: "Nu mai pierde clienți",
-      problemRest: "atunci când nu poți răspunde la telefon.",
-      primaryButton: "Programează un demo gratuit",
-      secondaryButton: "Vezi demonstrația",
-      proof: [
-        "Răspunde în mai puțin de 10 secunde",
-        "Integrare Google Calendar",
-        "AI antrenat pentru afacerea ta",
-        "Română & English",
-      ],
-      liveDemo: "LIVE DEMO",
-    },
-    demo: {
-      available: "Disponibil acum",
-      greeting:
-        "Salut! 👋 Bine ai venit la DavidPilot. Cum îți pot ajuta afacerea astăzi?",
-      placeholder: "Scrie mesajul tău…",
-      suggestions: [
-        "Vreau să automatizez solicitările clienților",
-        "Am nevoie de mai multe lead-uri calificate",
-        "Vreau programări automate",
-      ],
-      replies: [
-        "Perfect. Ce tip de afacere ai?",
-        "Aproximativ câte solicitări primești în fiecare săptămână?",
-        "Excelent. DavidPilot poate răspunde solicitărilor, poate califica fiecare lead și poate programa automat întâlniri. Demo-ul tău gratuit este pregătit.",
-      ],
-      liveWorkflow: "FLUX LIVE",
-      qualifiedLead: "Lead calificat",
-      business: "Afacere",
-      serviceCompany: "Companie de servicii",
-      weeklyInquiries: "Solicitări săptămânale",
-      leadScore: "Scor lead",
-      estimatedTime: "Timp economisit",
-      calculating: "Se calculează…",
-      building: "Se analizează…",
-      learning: "Analizăm conversația…",
-      demoReady: "Demo pregătit ✓",
-    },
-    metrics: {
-      response: "timp mediu de răspuns",
-      available: "disponibil permanent",
-      saved: "economisite săptămânal",
-      qualified: "mai multe lead-uri calificate",
-    },
-    product: {
-      kicker: "UN SINGUR AI. MUNCĂ REALĂ.",
-      title: "Mai mult decât un chatbot.",
-      description:
-        "DavidPilot gestionează activitățile repetitive care încetinesc echipa ta, de la primul mesaj până la programarea întâlnirii.",
-      cards: [
-        [
-          "Răspunde instant",
-          "Oferă răspunsuri rapide și consecvente pe website și pe canalele tale de comunicare.",
-        ],
-        [
-          "Califică fiecare lead",
-          "Colectează informațiile necesare înainte ca echipa ta să preia conversația.",
-        ],
-        [
-          "Programează întâlniri",
-          "Se conectează la calendar și oferă automat intervalele disponibile.",
-        ],
-        [
-          "Trimite follow-up-uri",
-          "Continuă conversațiile automat, astfel încât oportunitățile importante să nu fie pierdute.",
-        ],
-      ],
-    },
-    industries: {
-      kicker: "CREAT PENTRU AFACERI DE SERVICII",
-      title: "Se adaptează modului tău de lucru.",
-      description:
-        "Începe cu un proces important și extinde automatizarea pe măsură ce afacerea crește.",
-      items: [
-        "Instalații HVAC",
-        "Instalații sanitare",
-        "Clinici stomatologice",
-        "Clinici medicale",
-        "Imobiliare",
-        "Construcții",
-        "Service-uri auto",
-        "Cabinete de avocatură",
-      ],
-    },
-    founder: {
-      kicker: "CONSTRUIT CU EXPERIENȚĂ TEHNICĂ",
-      title: "AI practic, creat de un inginer.",
-      description:
-        "Sunt Gabriel Dobrescu, fondator și CEO DavidPilot. Am experiență în inginerie software, cloud, DevOps și coordonarea echipelor tehnice. Am creat DavidPilot pentru a transforma automatizarea AI într-un instrument clar, sigur și util pentru afacerile care vor rezultate concrete.",
-      link: "Află povestea fondatorului",
-      role: "Fondator & CEO",
-    },
-    pricing: {
-      kicker: "ÎNCEPE SIMPLU",
-      title: "Primul tău angajat AI.",
-      description:
-        "Configurăm DavidPilot în funcție de afacerea, serviciile și fluxurile tale.",
-      starting: "DE LA",
-      month: "/lună",
-      setup: "Configurarea inițială se stabilește separat.",
-      button: "Solicită oferta",
-    },
-    faq: {
-      kicker: "ÎNTREBĂRI",
-      title: "Răspunsuri clare.",
-      items: [
-        [
-          "Ce este un angajat AI?",
-          "Un angajat AI este un asistent digital instruit pentru afacerea ta. Poate răspunde la întrebări, califica lead-uri, programa întâlniri și trimite follow-up-uri automat.",
-        ],
-        [
-          "DavidPilot funcționează în afara programului?",
-          "Da. DavidPilot este disponibil 24/7, inclusiv seara, în weekend și în zilele libere.",
-        ],
-        [
-          "Se poate conecta la instrumentele pe care le folosesc deja?",
-          "Da. DavidPilot se poate conecta la website, email, calendar, CRM și alte sisteme folosite în afacerea ta.",
-        ],
-      ],
-    },
-    final: {
-      kicker: "EȘTI PREGĂTIT?",
-      title: "Automatizează conversațiile cu clienții.",
-      description:
-        "Descoperă cum poate funcționa DavidPilot pentru afacerea ta într-un demo gratuit de 30 de minute.",
-      button: "Programează demo-ul gratuit",
-    },
-    footer: "Angajatul tău AI.",
-  },
+const t = {
   en: {
-    navigation: {
-      product: "Product",
-      industries: "Industries",
-      pricing: "Pricing",
-      about: "About the founder",
-      demo: "Book a demo",
-    },
-    hero: {
-      eyebrow: "An AI employee for your business",
-      titleStart: "Hire your first",
-      titleHighlight: "AI employee.",
-      description:
-        "DavidPilot answers customers instantly, qualifies leads and books appointments 24/7, so you and your team can focus on growing the business.",
-      problemStrong: "Stop losing customers",
-      problemRest: "when you cannot answer the phone.",
-      primaryButton: "Book a free demo",
-      secondaryButton: "See the demo",
-      proof: [
-        "Replies in under 10 seconds",
-        "Google Calendar integration",
-        "AI trained for your business",
-        "Romanian & English",
-      ],
-      liveDemo: "LIVE DEMO",
-    },
-    demo: {
-      available: "Available now",
-      greeting:
-        "Hi! 👋 Welcome to DavidPilot. What can I help your business with today?",
-      placeholder: "Type your message…",
-      suggestions: [
-        "I want to automate customer inquiries",
-        "I need more qualified leads",
-        "I want to book appointments automatically",
-      ],
-      replies: [
-        "Great. What type of business do you run?",
-        "Perfect. Approximately how many customer inquiries do you receive each week?",
-        "Excellent. DavidPilot can answer those inquiries, qualify each lead and book appointments automatically. Your free demo is ready.",
-      ],
-      liveWorkflow: "LIVE WORKFLOW",
-      qualifiedLead: "Lead qualified",
-      business: "Business",
-      serviceCompany: "Service company",
-      weeklyInquiries: "Weekly inquiries",
-      leadScore: "Lead score",
-      estimatedTime: "Estimated time saved",
-      calculating: "Calculating…",
-      building: "Building…",
-      learning: "Learning from conversation…",
-      demoReady: "Demo ready ✓",
-    },
-    metrics: {
-      response: "average response",
-      available: "always available",
-      saved: "saved each week",
-      qualified: "more qualified leads",
-    },
-    product: {
-      kicker: "ONE AI. REAL WORK.",
-      title: "More than a chatbot.",
-      description:
-        "DavidPilot handles the repetitive customer work that slows your team down, from first message to booked appointment.",
-      cards: [
-        [
-          "Answers instantly",
-          "Helpful, consistent replies across your website and customer channels.",
-        ],
-        [
-          "Qualifies every lead",
-          "Collects the details your team needs before anyone picks up the phone.",
-        ],
-        [
-          "Books appointments",
-          "Connects to your calendar and offers available times automatically.",
-        ],
-        [
-          "Follows up",
-          "Keeps conversations moving so valuable opportunities are not forgotten.",
-        ],
-      ],
-    },
-    industries: {
-      kicker: "BUILT FOR SERVICE BUSINESSES",
-      title: "Fits the way you work.",
-      description:
-        "Start with one high-value workflow, then expand as your business grows.",
-      items: [
-        "HVAC",
-        "Plumbing",
-        "Dental clinics",
-        "Medical clinics",
-        "Real estate",
-        "Construction",
-        "Auto services",
-        "Law firms",
-      ],
-    },
-    founder: {
-      kicker: "BUILT ON TECHNICAL EXPERIENCE",
-      title: "Practical AI, built by an engineer.",
-      description:
-        "I’m Gabriel Dobrescu, founder and CEO of DavidPilot. My background spans software engineering, cloud, DevOps and technical team leadership. I created DavidPilot to make AI automation clear, secure and useful for businesses that want measurable operational results.",
-      link: "Meet the founder",
-      role: "Founder & CEO",
-    },
-    pricing: {
-      kicker: "START SIMPLE",
-      title: "Your first AI employee.",
-      description:
-        "We configure DavidPilot around your business, services and customer journey.",
-      starting: "STARTING FROM",
-      month: "/month",
-      setup: "Custom setup quoted separately.",
-      button: "Get your plan",
-    },
-    faq: {
-      kicker: "QUESTIONS",
-      title: "Clear answers.",
-      items: [
-        [
-          "What is an AI employee?",
-          "An AI employee is a digital assistant trained on your business. It can answer questions, qualify leads, book appointments and follow up automatically.",
-        ],
-        [
-          "Does DavidPilot work outside business hours?",
-          "Yes. DavidPilot is available 24/7, including evenings, weekends and holidays.",
-        ],
-        [
-          "Can it connect to my current tools?",
-          "Yes. DavidPilot can connect to your website, email, calendar, CRM and other business systems.",
-        ],
-      ],
-    },
-    final: {
-      kicker: "READY WHEN YOU ARE",
-      title: "Put your customer conversations on autopilot.",
-      description:
-        "See how DavidPilot would work for your business in a free 30-minute demo.",
-      button: "Book my free demo",
-    },
-    footer: "Your AI employee.",
+    eyebrow: "ENTERPRISE AI ENGINEERING",
+    title: "AI engineered for real business impact.",
+    intro: "From AI agents and intelligent automation to enterprise integrations, DavidPilot helps organizations streamline operations, empower teams and unlock measurable value with production-ready AI.",
+    primary: "Book a free strategy session", secondary: "Explore solutions",
+    proof: ["Enterprise engineering", "Founder-led delivery", "Secure AI", "Cloud native", "Tailored integrations"],
+    solutionsEyebrow: "CAPABILITIES", solutionsTitle: "From isolated tasks to intelligent operations.",
+    solutionsIntro: "DavidPilot combines AI, automation and systems engineering to build solutions that work inside your existing business—not around it.",
+    solutions: [
+      ["AI Agents", "Purpose-built agents for support, sales, operations and internal knowledge."],
+      ["Process Automation", "Reliable workflows that remove repetitive work across teams and systems."],
+      ["Enterprise Integrations", "Secure connections across CRM, ERP, email, calendars, data and custom platforms."],
+      ["AI Strategy", "Practical roadmaps focused on business value, governance and responsible adoption."],
+    ],
+    whyEyebrow: "WHY DAVIDPILOT", whyTitle: "Engineering credibility. Commercial clarity.",
+    whyIntro: "We combine enterprise engineering discipline with marketing-aware delivery, so every solution is technically sound and tied to a clear business outcome.",
+    why: ["Engineering-first approach", "Enterprise experience", "Founder-led delivery", "Secure implementations", "Tailored integrations", "No generic AI solutions"],
+    investmentEyebrow: "INVESTMENT", investmentTitle: "Choose the right AI solution for your business.",
+    investmentIntro: "Every engagement starts with a free discovery call. We identify the strongest opportunity and recommend a solution aligned with your goals, systems and budget.",
+    popular: "RECOMMENDED",
+    plans: [
+      { name: "AI Starter", price: "€490", suffix: "starting from", description: "For companies taking their first practical step into AI.", features: ["AI chat assistant", "Website integration", "Basic automation", "7–10 day delivery", "Email support"], cta: "Get started" },
+      { name: "Business Automation", price: "€1,500", suffix: "starting from", description: "For growing teams ready to remove repetitive operational work.", features: ["Everything in Starter", "CRM integrations", "AI workflows", "Internal AI assistant", "API integrations", "Employee training"], cta: "Book consultation", featured: true },
+      { name: "Enterprise AI", price: "Custom", suffix: "tailored engagement", description: "For organizations requiring secure, integrated AI systems at scale.", features: ["AI agents", "Private AI solutions", "Enterprise integrations", "Security and compliance", "Ongoing support", "Dedicated engineering"], cta: "Talk to Gabriel" },
+    ],
+    trust: ["Free discovery call", "No hidden costs", "Enterprise security", "Tailored to your business"],
+    roiEyebrow: "AI ROI ESTIMATOR", roiTitle: "What could automation return to your business?", roiIntro: "Use this quick estimator to model the potential value of reducing repetitive work. Results are indicative, not a guarantee.",
+    employees: "Employees affected", hours: "Repetitive hours / employee / week", cost: "Average hourly cost (€)", automation: "Automation potential", recovered: "Estimated hours recovered / month", annual: "Estimated annual productivity opportunity", roiCta: "Get your personalized AI roadmap",
+    featuredEyebrow: "FEATURED AI SOLUTIONS", featuredTitle: "Practical AI for real operating problems.", featuredIntro: "Illustrative implementation patterns that show how DavidPilot can turn repetitive processes into measurable business value.", example: "EXAMPLE SOLUTION", challenge: "Challenge", solution: "Solution", value: "Business value", buildSimilar: "Build something similar",
+    featured: [
+      {industry:"Healthcare", title:"AI Receptionist", challenge:"Patients wait too long for responses and appointment handling.", solution:"A multilingual AI receptionist answers questions, qualifies requests and books appointments around the clock.", values:["24/7 availability","Faster booking","Lower admin workload"]},
+      {industry:"E-commerce", title:"AI Customer Support", challenge:"Support teams lose time on repetitive order and product questions.", solution:"An AI assistant resolves common requests and escalates complex cases with full context.", values:["Faster response times","Lower support effort","Consistent customer experience"]},
+      {industry:"Enterprise", title:"Internal AI Assistant", challenge:"Employees spend too much time searching documents and internal systems.", solution:"A secure assistant answers questions using approved company knowledge and permissions.", values:["Faster onboarding","Higher productivity","Controlled knowledge access"]},
+      {industry:"Operations", title:"Workflow Automation", challenge:"Teams manually transfer data between disconnected business systems.", solution:"AI-powered workflows connect applications, validate data and automate repetitive handoffs.", values:["Fewer manual tasks","Reduced errors","Faster operations"]},
+    ],
+    processEyebrow:"HOW WE WORK", processTitle:"A clear path from opportunity to production.", processIntro:"We start with the business problem, then engineer the right solution around your systems, people and measurable outcomes.",
+    process:[
+      ["Discover","We understand how your business operates before recommending AI."],
+      ["Design","We identify the highest-impact opportunities and define the architecture and roadmap."],
+      ["Build","We develop, integrate and test a secure solution inside your existing environment."],
+      ["Launch & Optimize","We deploy, monitor performance and continuously improve the solution."],
+    ],
+    processTrust:["Enterprise-grade security","Founder-led delivery","Transparent communication","Long-term partnership"],
+    founderTitle:"Leadership grounded in engineering.", founderText:"Founded by Gabriel Dobrescu, an engineering leader with more than a decade of experience across software engineering, cloud, DevOps, enterprise platforms and technical leadership.", founderLink:"Explore leadership",
+    finalTitle:"Ready to see what AI can do for your business?", finalText:"Whether you are exploring your first automation or planning an enterprise AI initiative, we will help you identify the opportunities that deliver real value.",
+    faqTitle:"Before we begin", faqs:[["Do I need technical knowledge?","No. We handle the architecture, implementation and integration from start to finish."],["How long does a project take?","Most engagements take between one and six weeks, depending on scope and integration complexity."],["Can you work with our existing systems?","Yes. We integrate with CRMs, ERPs, Microsoft 365, Google Workspace, APIs and custom platforms."]],
   },
-} as const;
+  ro: {
+    eyebrow: "ENTERPRISE AI ENGINEERING",
+    title: "AI proiectat pentru impact real în afaceri.",
+    intro: "De la agenți AI și automatizare inteligentă la integrări enterprise, DavidPilot ajută organizațiile să simplifice operațiunile, să își susțină echipele și să obțină valoare măsurabilă prin AI pregătit pentru producție.",
+    primary: "Programează o sesiune strategică gratuită", secondary: "Explorează soluțiile",
+    proof: ["Inginerie enterprise", "Livrare condusă de fondator", "AI securizat", "Cloud native", "Integrări personalizate"],
+    solutionsEyebrow: "CAPABILITĂȚI", solutionsTitle: "De la sarcini izolate la operațiuni inteligente.",
+    solutionsIntro: "DavidPilot combină AI, automatizare și ingineria sistemelor pentru a construi soluții care funcționează în interiorul companiei tale, nu în jurul ei.",
+    solutions: [["Agenți AI","Agenți specializați pentru suport, vânzări, operațiuni și cunoaștere internă."],["Automatizarea proceselor","Fluxuri fiabile care elimină activitatea repetitivă din echipe și sisteme."],["Integrări enterprise","Conexiuni securizate între CRM, ERP, email, calendare, date și platforme custom."],["Strategie AI","Planuri pragmatice concentrate pe valoare, guvernanță și adopție responsabilă."]],
+    whyEyebrow:"DE CE DAVIDPILOT", whyTitle:"Credibilitate tehnică. Claritate comercială.", whyIntro:"Combinăm disciplina ingineriei enterprise cu o abordare comercială, astfel încât fiecare soluție să fie solidă tehnic și legată de un rezultat clar pentru business.",
+    why:["Abordare engineering-first","Experiență enterprise","Livrare condusă de fondator","Implementări securizate","Integrări personalizate","Fără soluții AI generice"],
+    investmentEyebrow:"INVESTIȚIE", investmentTitle:"Alege soluția AI potrivită pentru afacerea ta.", investmentIntro:"Fiecare colaborare începe cu o discuție gratuită. Identificăm oportunitatea cu cel mai mare impact și recomandăm o soluție aliniată obiectivelor, sistemelor și bugetului tău.", popular:"RECOMANDAT",
+    plans:[{name:"AI Starter",price:"€490",suffix:"de la",description:"Pentru companiile care fac primul pas practic către AI.",features:["Asistent AI pentru website","Integrare în website","Automatizare de bază","Livrare în 7–10 zile","Suport prin email"],cta:"Începe acum"},{name:"Business Automation",price:"€1.500",suffix:"de la",description:"Pentru echipele în creștere care vor să elimine activitatea repetitivă.",features:["Tot ce include Starter","Integrări CRM","Fluxuri AI","Asistent AI intern","Integrări API","Training pentru angajați"],cta:"Programează o consultație",featured:true},{name:"Enterprise AI",price:"Personalizat",suffix:"proiect adaptat",description:"Pentru organizații care au nevoie de sisteme AI securizate și integrate la scară.",features:["Agenți AI","Soluții AI private","Integrări enterprise","Securitate și conformitate","Suport continuu","Inginerie dedicată"],cta:"Discută cu Gabriel"}],
+    trust:["Consultație gratuită","Fără costuri ascunse","Securitate enterprise","Adaptat afacerii tale"],
+    roiEyebrow:"ESTIMATOR ROI AI", roiTitle:"Ce valoare poate aduce automatizarea afacerii tale?", roiIntro:"Folosește acest estimator rapid pentru a modela valoarea potențială a reducerii activității repetitive. Rezultatele sunt orientative, nu o garanție.", employees:"Angajați implicați", hours:"Ore repetitive / angajat / săptămână", cost:"Cost mediu pe oră (€)", automation:"Potențial de automatizare", recovered:"Ore estimate recuperate / lună", annual:"Oportunitate anuală estimată de productivitate", roiCta:"Primește o strategie AI personalizată",
+    featuredEyebrow:"SOLUȚII AI REPREZENTATIVE", featuredTitle:"AI practic pentru probleme operaționale reale.", featuredIntro:"Exemple de implementare care arată cum DavidPilot poate transforma procesele repetitive în valoare măsurabilă pentru business.", example:"EXEMPLU DE SOLUȚIE", challenge:"Provocare", solution:"Soluție", value:"Valoare pentru business", buildSimilar:"Construiește ceva similar",
+    featured:[{industry:"Sănătate",title:"Recepționer AI",challenge:"Pacienții așteaptă prea mult pentru răspunsuri și programări.",solution:"Un recepționer AI multilingv răspunde, califică solicitările și programează consultații 24/7.",values:["Disponibilitate 24/7","Programări mai rapide","Mai puțină muncă administrativă"]},{industry:"E-commerce",title:"Suport clienți AI",challenge:"Echipele pierd timp cu întrebări repetitive despre produse și comenzi.",solution:"Un asistent AI rezolvă cererile uzuale și escaladează cazurile complexe cu tot contextul necesar.",values:["Răspunsuri mai rapide","Efort redus de suport","Experiență consecventă"]},{industry:"Enterprise",title:"Asistent AI intern",challenge:"Angajații pierd timp căutând documente și informații în sisteme interne.",solution:"Un asistent securizat răspunde folosind cunoștințe aprobate și reguli de acces.",values:["Onboarding mai rapid","Productivitate mai mare","Acces controlat la informații"]},{industry:"Operațiuni",title:"Automatizarea fluxurilor",challenge:"Echipele transferă manual date între sisteme de business neconectate.",solution:"Fluxurile cu AI conectează aplicațiile, validează datele și automatizează transferurile repetitive.",values:["Mai puține sarcini manuale","Erori reduse","Operațiuni mai rapide"]}],
+    processEyebrow:"CUM LUCRĂM", processTitle:"Un traseu clar de la oportunitate la producție.", processIntro:"Pornim de la problema de business, apoi proiectăm soluția potrivită în jurul sistemelor, oamenilor și rezultatelor măsurabile.", process:[["Descoperire","Înțelegem cum funcționează afacerea ta înainte de a recomanda AI."],["Design","Identificăm oportunitățile cu impact mare și definim arhitectura și planul."],["Dezvoltare","Construim, integrăm și testăm o soluție securizată în mediul existent."],["Lansare & optimizare","Implementăm, monitorizăm performanța și îmbunătățim continuu soluția."]], processTrust:["Securitate enterprise","Livrare condusă de fondator","Comunicare transparentă","Parteneriat pe termen lung"],
+    founderTitle:"Leadership construit pe experiență tehnică.", founderText:"Fondat de Gabriel Dobrescu, lider în inginerie cu peste un deceniu de experiență în software, cloud, DevOps, platforme enterprise și coordonare tehnică.", founderLink:"Descoperă leadership-ul",
+    finalTitle:"Ești pregătit să vezi ce poate face AI pentru afacerea ta?", finalText:"Indiferent dacă explorezi prima automatizare sau planifici o inițiativă AI enterprise, te ajutăm să identifici oportunitățile care livrează valoare reală.",
+    faqTitle:"Înainte să începem", faqs:[["Am nevoie de cunoștințe tehnice?","Nu. Ne ocupăm de arhitectură, implementare și integrare de la început până la final."],["Cât durează un proiect?","Majoritatea proiectelor durează între una și șase săptămâni, în funcție de complexitate și integrări."],["Puteți integra sistemele noastre existente?","Da. Lucrăm cu CRM-uri, ERP-uri, Microsoft 365, Google Workspace, API-uri și platforme custom."]],
+  },
+};
 
-function Logo() {
-  return (
-    <div className="logo">
-      <div className="logo-mark" aria-hidden="true">
-        <span className="eye" />
-        <span className="eye" />
-        <span className="smile" />
-      </div>
-      <span>DavidPilot</span>
+type Lang = keyof typeof t;
+
+function RoiCalculator({ lang }: { lang: Lang }) {
+  const c = t[lang];
+  const [employees, setEmployees] = useState(12);
+  const [hours, setHours] = useState(6);
+  const [cost, setCost] = useState(25);
+  const [automation, setAutomation] = useState(50);
+  const results = useMemo(() => {
+    const monthlyHours = employees * hours * 4.33 * (automation / 100);
+    return { monthlyHours: Math.round(monthlyHours), annualValue: Math.round(monthlyHours * cost * 12) };
+  }, [employees, hours, cost, automation]);
+  return <section className="roi-section" id="roi"><div className="container roi-grid">
+    <div className="roi-copy"><span className="eyebrow">{c.roiEyebrow}</span><h2>{c.roiTitle}</h2><p>{c.roiIntro}</p><BookingButton className="button button-light">{c.roiCta}</BookingButton></div>
+    <div className="roi-card">
+      <label>{c.employees}<input type="number" min="1" max="10000" value={employees} onChange={e=>setEmployees(Math.max(1, Number(e.target.value)||1))}/></label>
+      <label>{c.hours}<input type="number" min="1" max="80" value={hours} onChange={e=>setHours(Math.max(1, Number(e.target.value)||1))}/></label>
+      <label>{c.cost}<input type="number" min="1" max="1000" value={cost} onChange={e=>setCost(Math.max(1, Number(e.target.value)||1))}/></label>
+      <label>{c.automation}: <strong>{automation}%</strong><input type="range" min="10" max="90" step="5" value={automation} onChange={e=>setAutomation(Number(e.target.value))}/></label>
+      <div className="roi-results"><div><span>{c.recovered}</span><strong>{results.monthlyHours}</strong></div><div><span>{c.annual}</span><strong>€{results.annualValue.toLocaleString(lang === "ro" ? "ro-RO" : "en-US")}</strong></div></div>
     </div>
-  );
+  </div></section>;
 }
 
-
-function LeadCapture({
-  language,
-  lead,
-  messages,
-}: {
-  language: Language;
-  lead: LeadData;
-  messages: Message[];
-}) {
-  const [form, setForm] = useState({
-    name: "",
-    company: "",
-    email: "",
-    phone: "",
-  });
-  const [status, setStatus] = useState<
-    "idle" | "sending" | "success" | "error"
-  >("idle");
-  const [error, setError] = useState("");
-
-  const copy =
-    language === "ro"
-      ? {
-          title: "Primește o demonstrație configurată pentru afacerea ta",
-          description:
-            "Lasă-ne datele tale și îți trimitem pașii următori. Durează mai puțin de un minut.",
-          name: "Nume",
-          company: "Companie",
-          email: "Email",
-          phone: "Telefon",
-          button: "Trimite solicitarea",
-          sending: "Se trimite…",
-          success:
-            "Solicitarea a fost trimisă. Te vom contacta pentru stabilirea demonstrației.",
-          error: "Solicitarea nu a putut fi trimisă. Încearcă din nou.",
-          privacy:
-            "Datele sunt folosite doar pentru a te contacta în legătură cu demonstrația.",
-          book: "Programează direct în calendar",
-        }
-      : {
-          title: "Get a demo configured for your business",
-          description:
-            "Leave your contact details and we will send you the next steps. It takes less than a minute.",
-          name: "Name",
-          company: "Company",
-          email: "Email",
-          phone: "Phone",
-          button: "Send request",
-          sending: "Sending…",
-          success:
-            "Your request was sent. We will contact you to arrange the demo.",
-          error: "The request could not be sent. Please try again.",
-          privacy:
-            "Your details are used only to contact you about the demonstration.",
-          book: "Book directly in the calendar",
-        };
-
-  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setStatus("sending");
-    setError("");
-
-    try {
-      const response = await fetch("/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          language,
-          lead,
-          conversation: messages.slice(-10),
-        }),
-      });
-
-      const data = (await response.json()) as { ok?: boolean; error?: string };
-
-      if (!response.ok || !data.ok) {
-        throw new Error(data.error || copy.error);
-      }
-
-      setStatus("success");
-    } catch (requestError) {
-      setError(
-        requestError instanceof Error ? requestError.message : copy.error
-      );
-      setStatus("error");
-    }
-  };
-
-  if (status === "success") {
-    return (
-      <div className="lead-capture success">
-        <div className="success-icon">✓</div>
-        <h3>{copy.success}</h3>
-        {process.env.NEXT_PUBLIC_BOOKING_URL && (
-          <a
-            className="button"
-            href={process.env.NEXT_PUBLIC_BOOKING_URL}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {copy.book} →
-          </a>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <form className="lead-capture" onSubmit={submit}>
-      <span className="kicker">NEXT STEP</span>
-      <h3>{copy.title}</h3>
-      <p>{copy.description}</p>
-
-      <div className="lead-form-grid">
-        <label>
-          <span>{copy.name}</span>
-          <input
-            required
-            minLength={2}
-            maxLength={80}
-            autoComplete="name"
-            value={form.name}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, name: event.target.value }))
-            }
-          />
-        </label>
-
-        <label>
-          <span>{copy.company}</span>
-          <input
-            required
-            minLength={2}
-            maxLength={120}
-            autoComplete="organization"
-            value={form.company}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                company: event.target.value,
-              }))
-            }
-          />
-        </label>
-
-        <label>
-          <span>{copy.email}</span>
-          <input
-            required
-            type="email"
-            maxLength={160}
-            autoComplete="email"
-            value={form.email}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, email: event.target.value }))
-            }
-          />
-        </label>
-
-        <label>
-          <span>{copy.phone}</span>
-          <input
-            required
-            type="tel"
-            maxLength={30}
-            autoComplete="tel"
-            value={form.phone}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, phone: event.target.value }))
-            }
-          />
-        </label>
-      </div>
-
-      {error && <div className="form-error">{error}</div>}
-
-      <button className="button" type="submit" disabled={status === "sending"}>
-        {status === "sending" ? copy.sending : `${copy.button} →`}
-      </button>
-
-      <small>{copy.privacy}</small>
-    </form>
-  );
-}
-
-function Demo({ language }: { language: Language }) {
-  const t = translations[language].demo;
-  const emptyLead: LeadData = {
-    business: null,
-    weeklyInquiries: null,
-    score: null,
-    estimatedTimeSaved: null,
-    qualified: false,
-  };
-
-  const [messages, setMessages] = useState<Message[]>([
-    { sender: "ai", text: t.greeting },
-  ]);
-  const [input, setInput] = useState("");
-  const [typing, setTyping] = useState(false);
-  const [lead, setLead] = useState<LeadData>(emptyLead);
-  const [error, setError] = useState<string | null>(null);
-  const userMessageCount = messages.filter((message) => message.sender === "user").length;
-  const demoEnded = userMessageCount >= 8;
-
-  useEffect(() => {
-    setMessages([{ sender: "ai", text: t.greeting }]);
-    setLead(emptyLead);
-    setInput("");
-    setTyping(false);
-    setError(null);
-  }, [language, t.greeting]);
-
-  const leadView = useMemo(
-    () => ({
-      business: lead.business ?? "—",
-      inquiries: lead.weeklyInquiries ?? "—",
-      score: lead.score !== null ? `${lead.score}/100` : t.building,
-      saved: lead.estimatedTimeSaved ?? t.calculating,
-    }),
-    [lead, t]
-  );
-
-  const send = async (preset?: string) => {
-    const text = (preset ?? input).trim();
-    if (!text || typing || demoEnded) return;
-
-    if (text.length > 500) {
-      setError(
-        language === "ro"
-          ? "Mesajul poate avea maximum 500 de caractere."
-          : "Messages can contain at most 500 characters."
-      );
-      return;
-    }
-
-    const nextMessages: Message[] = [
-      ...messages,
-      { sender: "user", text },
-    ];
-
-    setMessages(nextMessages);
-    setInput("");
-    setTyping(true);
-    setError(null);
-
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          language,
-          messages: nextMessages,
-          lead,
-        }),
-      });
-
-      const data = (await response.json()) as ChatResponse | { error: string };
-
-      if (!response.ok || !("message" in data)) {
-        throw new Error("error" in data ? data.error : "Request failed");
-      }
-
-      setMessages((current) => [
-        ...current,
-        { sender: "ai", text: data.message },
-      ]);
-      setLead(data.lead);
-    } catch (requestError) {
-      console.error(requestError);
-      const message =
-        requestError instanceof Error ? requestError.message : "";
-      setError(
-        message ||
-          (language === "ro"
-            ? "Demo-ul nu a putut răspunde. Te rugăm să încerci din nou."
-            : "The demo could not respond. Please try again.")
-      );
-    } finally {
-      setTyping(false);
-    }
-  };
-
-  return (
-    <div className="demo-wrap">
-      <div className="live-demo">
-        <span className="live-dot" />
-        {translations[language].hero.liveDemo}
-      </div>
-
-      <div className="demo-shell">
-        <div className="chat-card">
-          <div className="chat-header">
-            <div className="avatar">D</div>
-            <div>
-              <strong>DavidPilot AI</strong>
-              <span>
-                <i /> {t.available}
-              </span>
-            </div>
-          </div>
-
-          <div className="messages">
-            <AnimatePresence initial={false}>
-              {messages.map((message, index) => (
-                <motion.div
-                  key={`${message.text}-${index}`}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`message ${message.sender}`}
-                >
-                  {message.text}
-                </motion.div>
-              ))}
-            </AnimatePresence>
-
-            {typing && (
-              <div className="message ai typing">
-                <b />
-                <b />
-                <b />
-              </div>
-            )}
-
-            {error && <div className="chat-error">{error}</div>}
-          </div>
-
-          {messages.length === 1 && (
-            <div className="suggestions">
-              {t.suggestions.map((suggestion) => (
-                <button key={suggestion} onClick={() => send(suggestion)}>
-                  {suggestion}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {demoEnded && (
-            <div className="chat-error">
-              {language === "ro"
-                ? "Demo-ul interactiv s-a încheiat. Programează o demonstrație completă pentru afacerea ta."
-                : "The interactive demo has ended. Book a full demonstration for your business."}
-            </div>
-          )}
-
-          <div className="chat-input">
-            <input
-              value={input}
-              onChange={(event) => setInput(event.target.value.slice(0, 500))}
-              onKeyDown={(event) => event.key === "Enter" && send()}
-              placeholder={t.placeholder}
-              aria-label={t.placeholder}
-              disabled={typing || demoEnded}
-              maxLength={500}
-            />
-            <button
-              onClick={() => send()}
-              aria-label="Send message"
-              disabled={typing || demoEnded}
-            >
-              ↗
-            </button>
-          </div>
-        </div>
-
-        <motion.div
-          className="lead-card"
-          animate={{ y: lead.score !== null ? -4 : 0 }}
-          transition={{ type: "spring", stiffness: 180 }}
-        >
-          <div className="lead-title">
-            <span>✓</span>
-            <div>
-              <small>{t.liveWorkflow}</small>
-              <strong>{t.qualifiedLead}</strong>
-            </div>
-          </div>
-
-          <dl>
-            <div>
-              <dt>{t.business}</dt>
-              <dd>{leadView.business}</dd>
-            </div>
-            <div>
-              <dt>{t.weeklyInquiries}</dt>
-              <dd>{leadView.inquiries}</dd>
-            </div>
-            <div>
-              <dt>{t.leadScore}</dt>
-              <dd>{leadView.score}</dd>
-            </div>
-            <div>
-              <dt>{t.estimatedTime}</dt>
-              <dd>{leadView.saved}</dd>
-            </div>
-          </dl>
-
-          <div className={`status ${lead.qualified ? "done" : ""}`}>
-            {lead.qualified ? t.demoReady : t.learning}
-          </div>
-        </motion.div>
-      </div>
-
-      {(lead.qualified || demoEnded) && (
-        <LeadCapture language={language} lead={lead} messages={messages} />
-      )}
-    </div>
-  );
-}
-
-export default function Home() {
-  const [language, setLanguage] = useState<Language>("ro");
-  const t = translations[language];
-
-  useEffect(() => {
-    document.documentElement.lang = language;
-    window.localStorage.setItem("davidpilot-language", language);
-  }, [language]);
-
-  useEffect(() => {
-    const savedLanguage = window.localStorage.getItem(
-      "davidpilot-language"
-    ) as Language | null;
-
-    if (savedLanguage === "ro" || savedLanguage === "en") {
-      setLanguage(savedLanguage);
-    }
-  }, []);
-
-  return (
-    <main>
-      <header className="nav container">
-        <a href="#" aria-label="DavidPilot home">
-          <Logo />
-        </a>
-
-        <nav>
-          <a href="#product">{t.navigation.product}</a>
-          <a href="#industries">{t.navigation.industries}</a>
-          <a href="#pricing">{t.navigation.pricing}</a>
-          <a href="/about">{t.navigation.about}</a>
-        </nav>
-
-        <div className="nav-actions">
-          <div className="language-selector" aria-label="Select language">
-            <button
-              className={language === "ro" ? "active" : ""}
-              onClick={() => setLanguage("ro")}
-              aria-pressed={language === "ro"}
-            >
-              RO
-            </button>
-            <span>/</span>
-            <button
-              className={language === "en" ? "active" : ""}
-              onClick={() => setLanguage("en")}
-              aria-pressed={language === "en"}
-            >
-              EN
-            </button>
-          </div>
-
-          <a
-            className="button small"
-            href="mailto:gabriel@davidpilot.com?subject=DavidPilot demo"
-          >
-            {t.navigation.demo}
-          </a>
-        </div>
-      </header>
-
-      <section className="hero container">
-        <motion.div
-          className="hero-copy"
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <div className="eyebrow">
-            <span /> {t.hero.eyebrow}
-          </div>
-
-          <h1>
-            {t.hero.titleStart}
-            <em>{t.hero.titleHighlight}</em>
-          </h1>
-
-          <p>{t.hero.description}</p>
-
-          <div className="hero-problem">
-            <strong>{t.hero.problemStrong}</strong> {t.hero.problemRest}
-          </div>
-
-          <div className="hero-actions">
-            <a
-              className="button"
-              href="mailto:gabriel@davidpilot.com?subject=DavidPilot demo"
-            >
-              {t.hero.primaryButton} <span>→</span>
-            </a>
-            <a className="text-link" href="#demo">
-              {t.hero.secondaryButton} ↓
-            </a>
-          </div>
-
-          <div className="proof">
-            <span>⚡ {t.hero.proof[0]}</span>
-            <span>📅 {t.hero.proof[1]}</span>
-            <span>🤖 {t.hero.proof[2]}</span>
-            <span>🇷🇴 {t.hero.proof[3]}</span>
-          </div>
-        </motion.div>
-
-        <div id="demo">
-          <Demo language={language} />
-        </div>
-      </section>
-
-      <section className="metric-band">
-        <div className="container metrics">
-          <div>
-            <strong>&lt;10 sec</strong>
-            <span>{t.metrics.response}</span>
-          </div>
-          <div>
-            <strong>24/7</strong>
-            <span>{t.metrics.available}</span>
-          </div>
-          <div>
-            <strong>15 hrs</strong>
-            <span>{t.metrics.saved}</span>
-          </div>
-          <div>
-            <strong>3×</strong>
-            <span>{t.metrics.qualified}</span>
-          </div>
-        </div>
-      </section>
-
-      <section id="product" className="section container">
-        <div className="section-heading">
-          <div>
-            <span className="kicker">{t.product.kicker}</span>
-            <h2>{t.product.title}</h2>
-          </div>
-          <p>{t.product.description}</p>
-        </div>
-
-        <div className="feature-grid">
-          {t.product.cards.map(([title, copy], index) => (
-            <article key={title} className="feature-card">
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <h3>{title}</h3>
-              <p>{copy}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section id="industries" className="section alt">
-        <div className="container">
-          <div className="section-heading">
-            <div>
-              <span className="kicker">{t.industries.kicker}</span>
-              <h2>{t.industries.title}</h2>
-            </div>
-            <p>{t.industries.description}</p>
-          </div>
-
-          <div className="industry-grid">
-            {t.industries.items.map((industry) => (
-              <div key={industry}>
-                {industry}
-                <span>↗</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section founder-preview-wrap">
-        <div className="container founder-preview">
-          <div className="founder-portrait" aria-label="Gabriel Dobrescu">
-            <span>GD</span>
-            <small>{t.founder.role}</small>
-          </div>
-          <div className="founder-preview-copy">
-            <span className="kicker">{t.founder.kicker}</span>
-            <h2>{t.founder.title}</h2>
-            <p>{t.founder.description}</p>
-            <a className="text-link founder-link" href="/about">
-              {t.founder.link} →
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <section id="pricing" className="section container">
-        <div className="pricing-card">
-          <div>
-            <span className="kicker">{t.pricing.kicker}</span>
-            <h2>{t.pricing.title}</h2>
-            <p>{t.pricing.description}</p>
-          </div>
-
-          <div className="price-box">
-            <small>{t.pricing.starting}</small>
-            <strong>
-              €99<span>{t.pricing.month}</span>
-            </strong>
-            <p>{t.pricing.setup}</p>
-            <a
-              className="button"
-              href="mailto:gabriel@davidpilot.com?subject=DavidPilot pricing"
-            >
-              {t.pricing.button} →
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <section className="section container faq">
-        <div>
-          <span className="kicker">{t.faq.kicker}</span>
-          <h2>{t.faq.title}</h2>
-        </div>
-
-        <div>
-          {t.faq.items.map(([question, answer]) => (
-            <details key={question}>
-              <summary>
-                {question}
-                <span>+</span>
-              </summary>
-              <p>{answer}</p>
-            </details>
-          ))}
-        </div>
-      </section>
-
-      <section className="final-cta">
-        <div className="container">
-          <span className="kicker">{t.final.kicker}</span>
-          <h2>{t.final.title}</h2>
-          <p>{t.final.description}</p>
-          <a
-            className="button light"
-            href="mailto:gabriel@davidpilot.com?subject=DavidPilot demo"
-          >
-            {t.final.button} →
-          </a>
-        </div>
-      </section>
-
-      <footer className="footer container">
-        <Logo />
-        <p>© 2026 DavidPilot. {t.footer}</p>
-        <a href="mailto:gabriel@davidpilot.com">
-          gabriel@davidpilot.com
-        </a>
-      </footer>
-    </main>
-  );
-}
+export default function Home() { return <PageFrame>{({ lang }) => { const c = t[lang]; return <>
+  <section className="hero container"><div className="hero-copy"><span className="eyebrow">{c.eyebrow}</span><h1>{c.title}</h1><p>{c.intro}</p><div className="hero-actions"><BookingButton className="button">{c.primary}</BookingButton><a className="button button-ghost" href="#solutions">{c.secondary}</a></div></div><div className="system-visual" aria-hidden="true"><div className="system-grid"/><div className="system-core"><small>DAVIDPILOT</small><strong>AI OPERATING LAYER</strong><span>Secure • Integrated • Observable</span></div><div className="orbit orbit-one"/><div className="orbit orbit-two"/></div></section>
+  <section className="proof-strip container">{c.proof.map(x=><span key={x}>{x}</span>)}</section>
+  <section className="section container" id="solutions"><div className="section-heading"><span className="eyebrow">{c.solutionsEyebrow}</span><h2>{c.solutionsTitle}</h2><p>{c.solutionsIntro}</p></div><div className="solution-grid">{c.solutions.map((x,i)=><article className="premium-card" key={x[0]}><span className="card-number">0{i+1}</span><h3>{x[0]}</h3><p>{x[1]}</p><Link href="/solutions">↗</Link></article>)}</div></section>
+  <section className="why-section"><div className="container why-grid"><div><span className="eyebrow">{c.whyEyebrow}</span><h2>{c.whyTitle}</h2><p>{c.whyIntro}</p></div><div className="why-list">{c.why.map((x,i)=><div key={x}><span>0{i+1}</span><strong>{x}</strong></div>)}</div></div></section>
+  <section className="investment-section" id="investment"><div className="container"><div className="investment-heading"><div><span className="eyebrow">{c.investmentEyebrow}</span><h2>{c.investmentTitle}</h2></div><p>{c.investmentIntro}</p></div><div className="pricing-grid">{c.plans.map(plan=><article className={`pricing-card${plan.featured?" featured":""}`} key={plan.name}>{plan.featured&&<span className="popular-badge">{c.popular}</span>}<div className="pricing-card-top"><h3>{plan.name}</h3><p>{plan.description}</p></div><div className="price"><small>{plan.suffix}</small><strong>{plan.price}</strong></div><ul>{plan.features.map(feature=><li key={feature}>{feature}</li>)}</ul><BookingButton className={`button${plan.featured?" button-pricing-featured":" button-pricing"}`}>{plan.cta}<span>↗</span></BookingButton></article>)}</div><div className="pricing-trust">{c.trust.map(item=><span key={item}><i>✓</i>{item}</span>)}</div></div></section>
+  <RoiCalculator lang={lang}/>
+  <section className="section container" id="featured-solutions"><div className="section-heading"><span className="eyebrow">{c.featuredEyebrow}</span><h2>{c.featuredTitle}</h2><p>{c.featuredIntro}</p></div><div className="featured-grid">{c.featured.map((item,i)=><article className="featured-card" key={item.title}><div className="featured-top"><span>{item.industry}</span><small>{c.example}</small></div><div className="featured-index">0{i+1}</div><h3>{item.title}</h3><div className="featured-copy"><b>{c.challenge}</b><p>{item.challenge}</p><b>{c.solution}</b><p>{item.solution}</p><b>{c.value}</b><ul>{item.values.map(v=><li key={v}>{v}</li>)}</ul></div><BookingButton className="text-link">{c.buildSimilar} →</BookingButton></article>)}</div></section>
+  <section className="process-section" id="process"><div className="container"><div className="section-heading process-heading"><span className="eyebrow">{c.processEyebrow}</span><h2>{c.processTitle}</h2><p>{c.processIntro}</p></div><div className="process-grid">{c.process.map((step,i)=><article key={step[0]}><span>0{i+1}</span><h3>{step[0]}</h3><p>{step[1]}</p></article>)}</div><div className="process-trust">{c.processTrust.map(x=><span key={x}>✓ {x}</span>)}</div></div></section>
+  <section className="section container founder-preview"><div className="founder-monogram">GD</div><div><span className="eyebrow">FOUNDER & CEO</span><h2>{c.founderTitle}</h2><p>{c.founderText}</p><Link className="text-link" href="/leadership">{c.founderLink} →</Link></div></section>
+  <section className="section container"><div className="cta-panel"><span className="eyebrow">START A CONVERSATION</span><h2>{c.finalTitle}</h2><p>{c.finalText}</p><BookingButton className="button button-light">{c.primary}</BookingButton></div></section>
+  <section className="section container compact-faq"><div><span className="eyebrow">FAQ</span><h2>{c.faqTitle}</h2></div><div className="faq-list light-faq">{c.faqs.map(([q,a])=><details key={q}><summary>{q}<span>+</span></summary><p>{a}</p></details>)}</div></section>
+</>; }}</PageFrame>; }
