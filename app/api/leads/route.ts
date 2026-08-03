@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { insertLead } from "@/lib/supabase-rest";
+import { analyzeLead } from "@/lib/lead-intelligence";
 
 export const runtime = "nodejs";
 
@@ -111,24 +112,48 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const businessType = clean(lead?.business, 160) || null;
+    const weeklyInquiries = clean(lead?.weeklyInquiries, 80) || null;
+    const mainProblem = clean(lead?.mainProblem, 500) || null;
+    const intelligence = await analyzeLead({
+      company,
+      language,
+      businessType,
+      weeklyInquiries,
+      mainProblem,
+      conversation,
+    });
+
     await insertLead({
       name,
       company,
       email,
       phone,
       language,
-      business_type: clean(lead?.business, 160) || null,
-      weekly_inquiries: clean(lead?.weeklyInquiries, 80) || null,
-      main_problem: clean(lead?.mainProblem, 500) || null,
+      business_type: businessType,
+      weekly_inquiries: weeklyInquiries,
+      main_problem: mainProblem,
       lead_score:
-        typeof lead?.score === "number"
+        intelligence.leadScore ??
+        (typeof lead?.score === "number"
           ? Math.max(0, Math.min(100, Math.round(lead.score)))
-          : null,
+          : null),
       estimated_time_saved: clean(lead?.estimatedTimeSaved, 100) || null,
       qualified: Boolean(lead?.qualified),
       conversation,
       status: "new",
       notes: null,
+      industry: intelligence.industry,
+      company_size: intelligence.companySize,
+      urgency: intelligence.urgency,
+      buying_intent: intelligence.buyingIntent,
+      ai_maturity: intelligence.aiMaturity,
+      estimated_value_min: intelligence.estimatedValueMin,
+      estimated_value_max: intelligence.estimatedValueMax,
+      recommended_service: intelligence.recommendedService,
+      ai_summary: intelligence.aiSummary,
+      next_action: intelligence.nextAction,
+      last_activity: new Date().toISOString(),
     });
 
     return NextResponse.json({ ok: true });
