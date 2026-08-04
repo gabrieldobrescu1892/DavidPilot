@@ -33,6 +33,12 @@ export type StoredLead = {
   ai_summary: string | null;
   next_action: string | null;
   last_activity: string | null;
+  meeting_status: "not_booked" | "booked" | "completed" | "cancelled" | "no_show" | null;
+  meeting_at: string | null;
+  next_follow_up: string | null;
+  owner: string | null;
+  lost_reason: string | null;
+  activity: Array<{ at: string; type: string; label: string }> | null;
 };
 
 function config() {
@@ -117,7 +123,7 @@ export async function listLeads(options?: {
 
 export async function updateLead(
   id: string,
-  patch: Partial<Pick<StoredLead, "status" | "notes">>
+  patch: Partial<Pick<StoredLead, "status" | "notes" | "meeting_status" | "meeting_at" | "next_follow_up" | "owner" | "lost_reason" | "activity" | "last_activity">>
 ) {
   await supabaseFetch(`leads?id=eq.${encodeURIComponent(id)}`, {
     method: "PATCH",

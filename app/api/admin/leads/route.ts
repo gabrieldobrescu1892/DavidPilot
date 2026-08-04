@@ -30,6 +30,12 @@ export async function PATCH(request: NextRequest) {
     id?: string;
     status?: LeadStatus;
     notes?: string;
+    meeting_status?: "not_booked" | "booked" | "completed" | "cancelled" | "no_show";
+    meeting_at?: string | null;
+    next_follow_up?: string | null;
+    owner?: string;
+    lost_reason?: string;
+    activity?: Array<{ at: string; type: string; label: string }>;
   };
 
   const validStatuses: LeadStatus[] = [
@@ -44,13 +50,22 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "Missing lead ID." }, { status: 400 });
   }
 
-  const patch: { status?: LeadStatus; notes?: string } = {};
+  const patch: {
+    status?: LeadStatus; notes?: string; meeting_status?: "not_booked" | "booked" | "completed" | "cancelled" | "no_show";
+    meeting_at?: string | null; next_follow_up?: string | null; owner?: string; lost_reason?: string;
+    activity?: Array<{ at: string; type: string; label: string }>; last_activity?: string;
+  } = {};
   if (body.status && validStatuses.includes(body.status)) {
     patch.status = body.status;
   }
-  if (typeof body.notes === "string") {
-    patch.notes = body.notes.slice(0, 3000);
-  }
+  if (typeof body.notes === "string") patch.notes = body.notes.slice(0, 6000);
+  if (body.meeting_status && ["not_booked","booked","completed","cancelled","no_show"].includes(body.meeting_status)) patch.meeting_status = body.meeting_status;
+  if (body.meeting_at === null || typeof body.meeting_at === "string") patch.meeting_at = body.meeting_at || null;
+  if (body.next_follow_up === null || typeof body.next_follow_up === "string") patch.next_follow_up = body.next_follow_up || null;
+  if (typeof body.owner === "string") patch.owner = body.owner.slice(0, 120);
+  if (typeof body.lost_reason === "string") patch.lost_reason = body.lost_reason.slice(0, 500);
+  if (Array.isArray(body.activity)) patch.activity = body.activity.slice(-100);
+  patch.last_activity = new Date().toISOString();
 
   try {
     await updateLead(body.id, patch);
