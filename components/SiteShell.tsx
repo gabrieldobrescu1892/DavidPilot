@@ -243,18 +243,18 @@ export function SiteHeader({ lang, setLang }: { lang: Lang; setLang: (lang: Lang
 
   const serviceItems = lang === "ro"
     ? [
-        ["AI Receptionist", "Conversații și programări automatizate, disponibile 24/7.", "/solutions"],
-        ["AI Agents", "Agenți orientați spre obiective, conectați la procesele companiei.", "/solutions"],
-        ["Business Automation", "Fluxuri inteligente pentru operațiuni repetitive și integrarea sistemelor.", "/solutions"],
-        ["Enterprise AI", "Arhitecturi AI sigure, scalabile și adaptate mediilor enterprise.", "/solutions"],
-        ["AI Consulting", "Strategie, prioritizare și implementare ghidată de inginerie.", "/contact"],
+        ["AI Receptionist", "Conversații și programări automatizate, disponibile 24/7.", "/solutions#ai-receptionist"],
+        ["AI Agents", "Agenți orientați spre obiective, conectați la procesele companiei.", "/solutions#ai-agents"],
+        ["Business Automation", "Fluxuri inteligente pentru operațiuni repetitive și integrarea sistemelor.", "/solutions#business-automation"],
+        ["Enterprise AI", "Arhitecturi AI sigure, scalabile și adaptate mediilor enterprise.", "/solutions#enterprise-ai"],
+        ["AI Consulting", "Strategie, prioritizare și implementare ghidată de inginerie.", "/solutions#ai-consulting"],
       ]
     : [
-        ["AI Receptionist", "Automated conversations and scheduling, available around the clock.", "/solutions"],
-        ["AI Agents", "Goal-oriented agents connected to your business processes.", "/solutions"],
-        ["Business Automation", "Intelligent workflows for repetitive operations and system integration.", "/solutions"],
-        ["Enterprise AI", "Secure, scalable AI architecture for enterprise environments.", "/solutions"],
-        ["AI Consulting", "Engineering-led strategy, prioritisation and implementation.", "/contact"],
+        ["AI Receptionist", "Automated conversations and scheduling, available around the clock.", "/solutions#ai-receptionist"],
+        ["AI Agents", "Goal-oriented agents connected to your business processes.", "/solutions#ai-agents"],
+        ["Business Automation", "Intelligent workflows for repetitive operations and system integration.", "/solutions#business-automation"],
+        ["Enterprise AI", "Secure, scalable AI architecture for enterprise environments.", "/solutions#enterprise-ai"],
+        ["AI Consulting", "Engineering-led strategy, prioritisation and implementation.", "/solutions#ai-consulting"],
       ];
 
   const copyItems = lang === "ro"
