@@ -208,41 +208,196 @@ export function useLanguage() {
 
 export function SiteHeader({ lang, setLang }: { lang: Lang; setLang: (lang: Lang) => void }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [openMenu, setOpenMenu] = useState<"services" | "copy" | "resources" | null>(null);
+  const headerRef = useRef<HTMLElement>(null);
+
+  const labels = lang === "ro"
+    ? {
+        home: "Acasă",
+        services: "Servicii",
+        copywriting: "AI Copywriting",
+        resources: "Resurse",
+        leadership: "Leadership",
+        contact: "Contact",
+        menu: "Meniu",
+        explore: "Explorează DavidPilot",
+        intro: "Soluții AI, automatizare și conținut inteligent pentru companii care vor rezultate măsurabile.",
+        allServices: "Toate serviciile",
+        open: "Deschide meniul",
+        close: "Închide meniul",
+      }
+    : {
+        home: "Home",
+        services: "Services",
+        copywriting: "AI Copywriting",
+        resources: "Resources",
+        leadership: "Leadership",
+        contact: "Contact",
+        menu: "Menu",
+        explore: "Explore DavidPilot",
+        intro: "AI systems, automation and intelligent content for companies pursuing measurable business outcomes.",
+        allServices: "View all services",
+        open: "Open menu",
+        close: "Close menu",
+      };
+
+  const serviceItems = lang === "ro"
+    ? [
+        ["AI Receptionist", "Conversații și programări automatizate, disponibile 24/7.", "/solutions"],
+        ["AI Agents", "Agenți orientați spre obiective, conectați la procesele companiei.", "/solutions"],
+        ["Business Automation", "Fluxuri inteligente pentru operațiuni repetitive și integrarea sistemelor.", "/solutions"],
+        ["Enterprise AI", "Arhitecturi AI sigure, scalabile și adaptate mediilor enterprise.", "/solutions"],
+        ["AI Consulting", "Strategie, prioritizare și implementare ghidată de inginerie.", "/contact"],
+      ]
+    : [
+        ["AI Receptionist", "Automated conversations and scheduling, available around the clock.", "/solutions"],
+        ["AI Agents", "Goal-oriented agents connected to your business processes.", "/solutions"],
+        ["Business Automation", "Intelligent workflows for repetitive operations and system integration.", "/solutions"],
+        ["Enterprise AI", "Secure, scalable AI architecture for enterprise environments.", "/solutions"],
+        ["AI Consulting", "Engineering-led strategy, prioritisation and implementation.", "/contact"],
+      ];
+
+  const copyItems = lang === "ro"
+    ? [
+        ["LinkedIn Posts", "Conținut profesional pentru brand personal și companie."],
+        ["Sales Emails", "Emailuri comerciale clare, relevante și orientate spre acțiune."],
+        ["Landing Pages", "Mesaje de conversie pentru servicii și produse."],
+        ["Blog & Insights", "Conținut educativ optimizat pentru autoritate și SEO."],
+        ["Google Ads", "Variante concise pentru campanii de performanță."],
+        ["Product Copy", "Descrieri comerciale adaptate publicului și canalului."],
+      ]
+    : [
+        ["LinkedIn Posts", "Professional content for executive and company positioning."],
+        ["Sales Emails", "Clear, relevant outreach designed to earn a response."],
+        ["Landing Pages", "Conversion-focused messaging for services and products."],
+        ["Blog & Insights", "Educational content built for authority and search visibility."],
+        ["Google Ads", "Concise variants for performance campaigns."],
+        ["Product Copy", "Commercial descriptions tailored to audience and channel."],
+      ];
+
+  const resourceItems = lang === "ro"
+    ? [
+        ["Insights", "Ghiduri practice despre AI și automatizare.", "/resources"],
+        ["Featured Solutions", "Exemple transparente de soluții și aplicații AI.", "/#featured-solutions"],
+        ["ROI Calculator", "Estimează oportunitatea de productivitate pentru compania ta.", "/#roi"],
+        ["AI Readiness", "Evaluare de maturitate AI. În curând.", "/resources"],
+      ]
+    : [
+        ["Insights", "Practical guidance on AI implementation and automation.", "/resources"],
+        ["Featured Solutions", "Transparent examples of AI systems and use cases.", "/#featured-solutions"],
+        ["ROI Calculator", "Estimate the productivity opportunity for your business.", "/#roi"],
+        ["AI Readiness", "AI maturity assessment. Coming soon.", "/resources"],
+      ];
 
   useEffect(() => {
     document.body.classList.toggle("mobile-menu-open", mobileOpen);
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMobileOpen(false);
+      if (event.key === "Escape") {
+        setMobileOpen(false);
+        setOpenMenu(null);
+      }
+    };
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (headerRef.current && !headerRef.current.contains(event.target as Node)) setOpenMenu(null);
     };
     window.addEventListener("keydown", closeOnEscape);
+    window.addEventListener("mousedown", closeOnOutsideClick);
     return () => {
       document.body.classList.remove("mobile-menu-open");
       window.removeEventListener("keydown", closeOnEscape);
+      window.removeEventListener("mousedown", closeOnOutsideClick);
     };
   }, [mobileOpen]);
 
-  const closeMenu = () => setMobileOpen(false);
+  const closeMenu = () => {
+    setMobileOpen(false);
+    setOpenMenu(null);
+  };
+
+  const toggleMenu = (menu: "services" | "copy" | "resources") => {
+    setOpenMenu((current) => current === menu ? null : menu);
+  };
 
   return (
     <>
-      <header className="site-header">
+      <header className="site-header premium-site-header" ref={headerRef}>
         <Link href="/" className="brand" aria-label="DavidPilot home" onClick={closeMenu}>
           <span>DAVIDPILOT</span>
           <small>Enterprise AI Engineering</small>
         </Link>
-        <nav className="desktop-nav">
-          {copy[lang].nav.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}
+
+        <nav className="desktop-nav premium-desktop-nav" aria-label="Primary navigation">
+          <Link href="/" className="premium-nav-link">{labels.home}</Link>
+
+          <div className={`premium-nav-group ${openMenu === "services" ? "open" : ""}`}>
+            <button type="button" onClick={() => toggleMenu("services")} aria-expanded={openMenu === "services"}>
+              {labels.services}<span aria-hidden="true">⌄</span>
+            </button>
+            <div className="premium-mega-menu services-menu">
+              <div className="mega-menu-intro">
+                <small>{lang === "ro" ? "AI ENGINEERING" : "AI ENGINEERING"}</small>
+                <h3>{lang === "ro" ? "Sisteme AI construite pentru business." : "AI systems built for business."}</h3>
+                <p>{lang === "ro" ? "De la automatizări punctuale la platforme enterprise, fiecare soluție este proiectată pentru rezultate măsurabile." : "From focused automation to enterprise platforms, every solution is engineered around measurable outcomes."}</p>
+                <Link href="/solutions" onClick={closeMenu}>{labels.allServices}<span>↗</span></Link>
+              </div>
+              <div className="mega-menu-grid">
+                {serviceItems.map(([title, description, href], index) => (
+                  <Link key={`${title}-${index}`} href={href} onClick={closeMenu}>
+                    <span>0{index + 1}</span><div><strong>{title}</strong><p>{description}</p></div><i>↗</i>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className={`premium-nav-group ${openMenu === "copy" ? "open" : ""}`}>
+            <button type="button" onClick={() => toggleMenu("copy")} aria-expanded={openMenu === "copy"}>
+              {labels.copywriting}<span aria-hidden="true">⌄</span>
+            </button>
+            <div className="premium-mega-menu copy-menu">
+              <div className="mega-menu-intro copy-menu-intro">
+                <small>AI COPY STUDIO</small>
+                <h3>{lang === "ro" ? "Conținut mai bun, produs mai rapid." : "Better content, produced faster."}</h3>
+                <p>{lang === "ro" ? "Generează texte profesionale în română și engleză, adaptate brandului și obiectivului comercial." : "Generate professional Romanian and English copy tailored to brand voice and commercial intent."}</p>
+                <Link href="/#copy-studio" onClick={closeMenu}>{lang === "ro" ? "Încearcă AI Copy Studio" : "Try AI Copy Studio"}<span>↗</span></Link>
+              </div>
+              <div className="mega-menu-grid copy-grid">
+                {copyItems.map(([title, description], index) => (
+                  <Link key={`${title}-${index}`} href="/#copy-studio" onClick={closeMenu}>
+                    <span>0{index + 1}</span><div><strong>{title}</strong><p>{description}</p></div><i>↗</i>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className={`premium-nav-group compact ${openMenu === "resources" ? "open" : ""}`}>
+            <button type="button" onClick={() => toggleMenu("resources")} aria-expanded={openMenu === "resources"}>
+              {labels.resources}<span aria-hidden="true">⌄</span>
+            </button>
+            <div className="premium-mega-menu resources-menu">
+              {resourceItems.map(([title, description, href], index) => (
+                <Link key={`${title}-${index}`} href={href} onClick={closeMenu}>
+                  <span>0{index + 1}</span><div><strong>{title}</strong><p>{description}</p></div><i>↗</i>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <Link href="/leadership" className="premium-nav-link">{labels.leadership}</Link>
+          <Link href="/contact" className="premium-nav-link">{labels.contact}</Link>
         </nav>
+
         <div className="header-actions">
           <div className="language-switch" aria-label="Language selector">
             <button className={lang === "en" ? "active" : ""} onClick={() => setLang("en")}>EN</button>
             <button className={lang === "ro" ? "active" : ""} onClick={() => setLang("ro")}>RO</button>
           </div>
-          <BookingButton className="button button-small">{copy[lang].cta}</BookingButton>
+          <BookingButton className="button button-small premium-header-cta">{copy[lang].cta}<span>↗</span></BookingButton>
           <button
             type="button"
             className={`mobile-menu-toggle ${mobileOpen ? "active" : ""}`}
-            aria-label={mobileOpen ? (lang === "ro" ? "Închide meniul" : "Close menu") : (lang === "ro" ? "Deschide meniul" : "Open menu")}
+            aria-label={mobileOpen ? labels.close : labels.open}
             aria-expanded={mobileOpen}
             aria-controls="mobile-navigation"
             onClick={() => setMobileOpen((current) => !current)}
@@ -254,39 +409,39 @@ export function SiteHeader({ lang, setLang }: { lang: Lang; setLang: (lang: Lang
       </header>
 
       <div className={`mobile-menu-backdrop ${mobileOpen ? "visible" : ""}`} onClick={closeMenu} aria-hidden="true" />
-      <nav id="mobile-navigation" className={`mobile-navigation ${mobileOpen ? "open" : ""}`} aria-hidden={!mobileOpen}>
+      <nav id="mobile-navigation" className={`mobile-navigation premium-mobile-navigation ${mobileOpen ? "open" : ""}`} aria-hidden={!mobileOpen}>
         <div className="mobile-navigation-top">
-          <div>
-            <small>DAVIDPILOT</small>
-            <span>{lang === "ro" ? "Enterprise AI Engineering" : "Enterprise AI Engineering"}</span>
-          </div>
-          <em>{lang === "ro" ? "Meniu" : "Menu"}</em>
+          <div><small>DAVIDPILOT</small><span>Enterprise AI Engineering</span></div>
+          <em>{labels.menu}</em>
         </div>
-        <div className="mobile-navigation-intro">
-          <span>{lang === "ro" ? "Explorează" : "Explore"}</span>
-          <p>{lang === "ro" ? "Soluții AI, investiție și expertiză inginerească pentru companii ambițioase." : "AI systems, investment options and engineering expertise for ambitious companies."}</p>
+        <div className="mobile-navigation-intro"><span>{labels.explore}</span><p>{labels.intro}</p></div>
+
+        <div className="premium-mobile-links">
+          <Link href="/" onClick={closeMenu}><span>01</span><strong>{labels.home}</strong><i>↗</i></Link>
+          <details>
+            <summary><span>02</span><strong>{labels.services}</strong><i>＋</i></summary>
+            <div>{serviceItems.map(([title, , href]) => <Link key={title} href={href} onClick={closeMenu}>{title}<span>↗</span></Link>)}</div>
+          </details>
+          <details>
+            <summary><span>03</span><strong>{labels.copywriting}</strong><i>＋</i></summary>
+            <div>{copyItems.map(([title]) => <Link key={title} href="/#copy-studio" onClick={closeMenu}>{title}<span>↗</span></Link>)}</div>
+          </details>
+          <details>
+            <summary><span>04</span><strong>{labels.resources}</strong><i>＋</i></summary>
+            <div>{resourceItems.map(([title, , href]) => <Link key={title} href={href} onClick={closeMenu}>{title}<span>↗</span></Link>)}</div>
+          </details>
+          <Link href="/leadership" onClick={closeMenu}><span>05</span><strong>{labels.leadership}</strong><i>↗</i></Link>
+          <Link href="/contact" onClick={closeMenu}><span>06</span><strong>{labels.contact}</strong><i>↗</i></Link>
         </div>
-        <div className="mobile-navigation-links">
-          {copy[lang].nav.map(([label, href], index) => (
-            <Link key={href} href={href} onClick={closeMenu}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <strong>{label}</strong>
-              <i aria-hidden="true">→</i>
-            </Link>
-          ))}
-        </div>
+
         <div className="mobile-menu-divider" />
-        <BookingButton className="button mobile-menu-cta" onClick={closeMenu}>
-          <span>{copy[lang].cta}</span><i aria-hidden="true">↗</i>
-        </BookingButton>
-        <div className="mobile-menu-contact">
-          <a href="mailto:gabriel@davidpilot.com">gabriel@davidpilot.com</a>
-          <a href="tel:+40740985987">+40 740 985 987</a>
-        </div>
+        <BookingButton className="button mobile-menu-cta" onClick={closeMenu}><span>{copy[lang].cta}</span><i aria-hidden="true">↗</i></BookingButton>
+        <div className="mobile-menu-contact"><a href="mailto:gabriel@davidpilot.com">gabriel@davidpilot.com</a><a href="tel:+40740985987">+40 740 985 987</a></div>
       </nav>
     </>
   );
 }
+
 
 export function SiteFooter({ lang }: { lang: Lang }) {
   return (
