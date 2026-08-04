@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { BookingButton, PageFrame } from "../components/SiteShell";
+import PublicCopyStudio from "../components/PublicCopyStudio";
 
 const t = {
   en: {
@@ -104,6 +105,7 @@ export default function Home() { return <PageFrame>{({ lang }) => { const c = t[
   <section className="hero container"><div className="hero-copy"><span className="eyebrow">{c.eyebrow}</span><h1>{c.title}</h1><p>{c.intro}</p><div className="hero-actions"><BookingButton className="button">{c.primary}</BookingButton><a className="button button-ghost" href="#solutions">{c.secondary}</a></div></div><div className="system-visual" aria-hidden="true"><div className="system-grid"/><div className="system-core"><small>DAVIDPILOT</small><strong>AI OPERATING LAYER</strong><span>Secure • Integrated • Observable</span></div><div className="orbit orbit-one"/><div className="orbit orbit-two"/></div></section>
   <section className="proof-strip container">{c.proof.map(x=><span key={x}>{x}</span>)}</section>
   <section className="section container" id="solutions"><div className="section-heading"><span className="eyebrow">{c.solutionsEyebrow}</span><h2>{c.solutionsTitle}</h2><p>{c.solutionsIntro}</p></div><div className="solution-grid">{c.solutions.map((x,i)=><article className="premium-card" key={x[0]}><span className="card-number">0{i+1}</span><h3>{x[0]}</h3><p>{x[1]}</p><Link href="/solutions">↗</Link></article>)}</div></section>
+  <PublicCopyStudio lang={lang}/>
   <section className="why-section"><div className="container why-grid"><div><span className="eyebrow">{c.whyEyebrow}</span><h2>{c.whyTitle}</h2><p>{c.whyIntro}</p></div><div className="why-list">{c.why.map((x,i)=><div key={x}><span>0{i+1}</span><strong>{x}</strong></div>)}</div></div></section>
   <section className="investment-section" id="investment"><div className="container"><div className="investment-heading"><div><span className="eyebrow">{c.investmentEyebrow}</span><h2>{c.investmentTitle}</h2></div><p>{c.investmentIntro}</p></div><div className="pricing-grid">{c.plans.map(plan=><article className={`pricing-card${plan.featured?" featured":""}`} key={plan.name}>{plan.featured&&<span className="popular-badge">{c.popular}</span>}<div className="pricing-card-top"><h3>{plan.name}</h3><p>{plan.description}</p></div><div className="price"><small>{plan.suffix}</small><strong>{plan.price}</strong></div><ul>{plan.features.map(feature=><li key={feature}>{feature}</li>)}</ul><BookingButton className={`button${plan.featured?" button-pricing-featured":" button-pricing"}`}>{plan.cta}<span>↗</span></BookingButton></article>)}</div><div className="pricing-trust">{c.trust.map(item=><span key={item}><i>✓</i>{item}</span>)}</div></div></section>
   <RoiCalculator lang={lang}/>
