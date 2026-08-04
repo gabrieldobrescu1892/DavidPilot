@@ -154,6 +154,18 @@ export async function POST(request: NextRequest) {
       ai_summary: intelligence.aiSummary,
       next_action: intelligence.nextAction,
       last_activity: new Date().toISOString(),
+      meeting_status: "not_booked",
+      meeting_at: null,
+      next_follow_up: null,
+      owner: null,
+      lost_reason: null,
+      activity: [
+        {
+          at: new Date().toISOString(),
+          type: "lead_created",
+          label: "Lead captured and analyzed",
+        },
+      ],
     });
 
     return NextResponse.json({ ok: true });

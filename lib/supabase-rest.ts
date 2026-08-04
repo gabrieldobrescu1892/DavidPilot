@@ -2,6 +2,7 @@ export type LeadStatus =
   | "new"
   | "contacted"
   | "demo_booked"
+  | "proposal_sent"
   | "customer"
   | "closed";
 
