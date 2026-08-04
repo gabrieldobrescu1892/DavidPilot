@@ -172,3 +172,56 @@ export async function listCopyDrafts() {
   const response = await supabaseFetch(`copy_drafts?${params.toString()}`);
   return (await response.json()) as CopyDraft[];
 }
+
+export type ProposalContent = {
+  executive_summary: string;
+  current_challenges: string;
+  recommended_solution: string;
+  scope: string[];
+  delivery_approach: string;
+  expected_outcomes: string[];
+  assumptions: string[];
+  next_steps: string;
+};
+
+export type Proposal = {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  lead_id: string | null;
+  title: string;
+  language: "en" | "ro";
+  status: "draft" | "review" | "sent" | "accepted" | "declined";
+  currency: string;
+  investment_min: number | null;
+  investment_max: number | null;
+  timeline: string | null;
+  valid_until: string | null;
+  content: ProposalContent;
+};
+
+export async function listProposals() {
+  const params = new URLSearchParams({ select: "*", order: "created_at.desc", limit: "100" });
+  const response = await supabaseFetch(`proposals?${params.toString()}`);
+  return (await response.json()) as Proposal[];
+}
+
+export async function insertProposal(proposal: Omit<Proposal, "id" | "created_at" | "updated_at">) {
+  const response = await supabaseFetch("proposals", {
+    method: "POST",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify(proposal),
+  });
+  const rows = (await response.json()) as Proposal[];
+  return rows[0] ?? null;
+}
+
+export async function updateProposal(id: string, patch: Partial<Omit<Proposal, "id" | "created_at">>) {
+  const response = await supabaseFetch(`proposals?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify({ ...patch, updated_at: new Date().toISOString() }),
+  });
+  const rows = (await response.json()) as Proposal[];
+  return rows[0] ?? null;
+}
