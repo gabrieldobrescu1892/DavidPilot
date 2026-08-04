@@ -3,6 +3,13 @@ import { adminCookie, createAdminToken } from "@/lib/admin-auth";
 
 export const runtime = "nodejs";
 
+function cookieDomain(request: NextRequest) {
+  const hostname = request.nextUrl.hostname.toLowerCase();
+  return hostname === "davidpilot.com" || hostname.endsWith(".davidpilot.com")
+    ? ".davidpilot.com"
+    : undefined;
+}
+
 export async function POST(request: NextRequest) {
   const { password } = (await request.json()) as { password?: string };
   const expected = process.env.ADMIN_PASSWORD;
@@ -15,8 +22,9 @@ export async function POST(request: NextRequest) {
   response.cookies.set(adminCookie.name, createAdminToken(), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: "lax",
     path: "/",
+    domain: cookieDomain(request),
     maxAge: adminCookie.maxAge,
   });
   return response;
