@@ -47,10 +47,7 @@ export default function AnalyticsPage(){
   const maxService=Math.max(1,...view.services.map(([,v])=>v));
 
   return <main className="analytics-shell">
-
     <nav className="admin-nav"><Link href="/admin">Lead Cockpit</Link><Link className="active" href="/admin/analytics">Analytics</Link><Link href="/admin/copy-studio">AI Copy Studio</Link><Link href="/admin/proposals">Proposals</Link><Link href="/admin/clients">Clients</Link></nav>
-
-    <nav className="admin-nav"><Link href="/admin">Lead Cockpit</Link><Link className="active" href="/admin/analytics">Analytics</Link><Link href="/admin/copy-studio">AI Copy Studio</Link><Link href="/admin/proposals">Proposals</Link></nav>
     <header className="analytics-header"><div><span>DAVIDPILOT · BUSINESS INTELLIGENCE</span><h1>Analytics Dashboard</h1><p>Track acquisition, AI engagement and sales conversion across the DavidPilot funnel.</p></div><select value={range} onChange={e=>setRange(e.target.value)}><option value="7d">Last 7 days</option><option value="30d">Last 30 days</option><option value="90d">Last 90 days</option><option value="365d">Last 12 months</option></select></header>
     {error&&<div className="analytics-error">{error}</div>}
     {loading&&!data?<div className="analytics-loading">Loading analytics…</div>:<>
