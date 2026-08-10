@@ -221,6 +221,7 @@ export function SiteHeader({ lang, setLang }: { lang: Lang; setLang: (lang: Lang
         resources: "Resurse",
         leadership: "Leadership",
         contact: "Contact",
+        clientLogin: "Autentificare clienți",
         menu: "Meniu",
         explore: "Explorează DavidPilot",
         intro: "Soluții AI, automatizare și conținut inteligent pentru companii care vor rezultate măsurabile.",
@@ -235,6 +236,7 @@ export function SiteHeader({ lang, setLang }: { lang: Lang; setLang: (lang: Lang
         resources: "Resources",
         leadership: "Leadership",
         contact: "Contact",
+        clientLogin: "Client Login",
         menu: "Menu",
         explore: "Explore DavidPilot",
         intro: "AI systems, automation and intelligent content for companies pursuing measurable business outcomes.",
@@ -395,6 +397,7 @@ export function SiteHeader({ lang, setLang }: { lang: Lang; setLang: (lang: Lang
             <button className={lang === "en" ? "active" : ""} onClick={() => setLang("en")}>EN</button>
             <button className={lang === "ro" ? "active" : ""} onClick={() => setLang("ro")}>RO</button>
           </div>
+          <Link href="/portal/login" className="premium-client-login" onClick={closeMenu}>{labels.clientLogin}<span aria-hidden="true">↗</span></Link>
           <BookingButton className="button button-small premium-header-cta">{copy[lang].cta}<span>↗</span></BookingButton>
           <button
             type="button"
@@ -434,6 +437,7 @@ export function SiteHeader({ lang, setLang }: { lang: Lang; setLang: (lang: Lang
           </details>
           <Link href="/leadership" onClick={closeMenu}><span>05</span><strong>{labels.leadership}</strong><i>↗</i></Link>
           <Link href="/contact" onClick={closeMenu}><span>06</span><strong>{labels.contact}</strong><i>↗</i></Link>
+          <Link href="/portal/login" onClick={closeMenu} className="mobile-client-login"><span>07</span><strong>{labels.clientLogin}</strong><i>↗</i></Link>
         </div>
 
         <div className="mobile-menu-divider" />
@@ -457,6 +461,7 @@ export function SiteFooter({ lang }: { lang: Lang }) {
         <a href="mailto:gabriel@davidpilot.com">gabriel@davidpilot.com</a>
         <a href="tel:+40740985987">+40 740 985 987</a>
         <a href="https://wa.me/40740985987" target="_blank" rel="noreferrer">WhatsApp</a>
+        <Link href="/portal/login">{lang === "ro" ? "Portal clienți" : "Client Portal"}</Link>
       </div>
       <p className="copyright">© {new Date().getFullYear()} DavidPilot. {lang === "ro" ? "Toate drepturile rezervate." : "All rights reserved."}</p>
     </footer>
