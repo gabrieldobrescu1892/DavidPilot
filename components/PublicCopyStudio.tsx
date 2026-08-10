@@ -116,6 +116,8 @@ export default function PublicCopyStudio({ lang }: Props) {
           email: form.email,
           phone: form.phone,
           language: lang,
+          source: "public_copy_studio",
+          session_id: window.localStorage.getItem("davidpilot-analytics-session") || null,
           lead: {
             business: form.company,
             weeklyInquiries: null,

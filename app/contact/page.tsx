@@ -18,7 +18,7 @@ export default function Contact() {
       const form = new FormData(e.currentTarget);
       const message = String(form.get("message") || "");
       const payload = {
-        name: form.get("name"), company: form.get("company"), email: form.get("email"), phone: form.get("phone"), language: lang,
+        name: form.get("name"), company: form.get("company"), email: form.get("email"), phone: form.get("phone"), language: lang, source: "contact_form", session_id: window.localStorage.getItem("davidpilot-analytics-session") || null,
         lead: { business: form.get("company"), weeklyInquiries: null, mainProblem: message, score: null, estimatedTimeSaved: null, qualified: false },
         conversation: [{ sender: "user", text: message }]
       };

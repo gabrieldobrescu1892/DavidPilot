@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
-import { listLeads, updateLead, type LeadStatus } from "@/lib/supabase-rest";
+import { insertAnalyticsEvent, listLeads, updateLead, type LeadStatus } from "@/lib/supabase-rest";
 
 export const runtime = "nodejs";
 
@@ -42,6 +42,7 @@ export async function PATCH(request: NextRequest) {
     "new",
     "contacted",
     "demo_booked",
+    "proposal_sent",
     "customer",
     "closed",
   ];
@@ -69,6 +70,9 @@ export async function PATCH(request: NextRequest) {
 
   try {
     await updateLead(body.id, patch);
+    if (patch.status) {
+      await insertAnalyticsEvent({ event_name: "lead_status_changed", session_id: null, lead_id: body.id, language: null, source: "admin", page: "/admin", metadata: { status: patch.status } }).catch((error) => console.error("Lead status analytics failed", error));
+    }
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error(error);

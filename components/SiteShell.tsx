@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import AnalyticsTracker, { trackEvent } from "./AnalyticsTracker";
 
 type Lang = "en" | "ro";
 type Message = { sender: "user" | "ai"; text: string };
@@ -96,6 +97,7 @@ export function BookingButton({
       className={className}
       onClick={() => {
         onClick?.();
+        trackEvent("booking_opened");
         openBooking();
       }}
     >
@@ -508,6 +510,7 @@ export function ChatConsultant({ lang }: { lang: Lang }) {
     if (alreadyShown) return;
     const timer = window.setTimeout(() => {
       setOpen(true);
+      trackEvent("chat_opened", { metadata: { trigger: "auto" } });
       window.sessionStorage.setItem("davidpilot-chat-popup-shown", "true");
     }, 2500);
     return () => window.clearTimeout(timer);
@@ -518,6 +521,7 @@ export function ChatConsultant({ lang }: { lang: Lang }) {
     const text = input.trim();
     if (!text || loading) return;
     const next = [...messages, { sender: "user" as const, text }];
+    trackEvent("chat_message_sent");
     setMessages(next); setInput(""); setLoading(true);
     try {
       const response = await fetch("/api/chat", {
@@ -547,6 +551,8 @@ export function ChatConsultant({ lang }: { lang: Lang }) {
         body: JSON.stringify({
           ...contact,
           language: lang,
+          source: "ai_chat",
+          session_id: window.localStorage.getItem("davidpilot-analytics-session") || null,
           lead,
           conversation: messages,
         }),
@@ -620,7 +626,7 @@ export function ChatConsultant({ lang }: { lang: Lang }) {
           <span className="status-dot" />
           {copy[lang].chatBadge}
         </div>
-        <button className="chat-launcher" onClick={() => setOpen(true)} aria-label="Open AI consultant"><span>AI</span><strong>{copy[lang].chatLauncher}</strong></button>
+        <button className="chat-launcher" onClick={() => { setOpen(true); trackEvent("chat_opened", { metadata: { trigger: "launcher" } }); }} aria-label="Open AI consultant"><span>AI</span><strong>{copy[lang].chatLauncher}</strong></button>
       </div>}
     </>
   );
@@ -628,5 +634,5 @@ export function ChatConsultant({ lang }: { lang: Lang }) {
 
 export function PageFrame({ children }: { children: (props: { lang: Lang }) => React.ReactNode }) {
   const { lang, setLang } = useLanguage();
-  return <><SiteHeader lang={lang} setLang={setLang} /><main>{children({ lang })}</main><SiteFooter lang={lang} /><ChatConsultant lang={lang} /><BookingModal lang={lang} /></>;
+  return <><AnalyticsTracker /><SiteHeader lang={lang} setLang={setLang} /><main>{children({ lang })}</main><SiteFooter lang={lang} /><ChatConsultant lang={lang} /><BookingModal lang={lang} /></>;
 }
