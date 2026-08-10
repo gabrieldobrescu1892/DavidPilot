@@ -127,7 +127,7 @@ export default function CopyStudioPage() {
         <Link href="/admin">Lead Cockpit</Link>
         <Link href="/admin/analytics">Analytics</Link>
         <Link className="active" href="/admin/copy-studio">AI Copy Studio</Link>
-        <Link href="/admin/proposals">Proposals</Link>
+        <Link href="/admin/proposals">Proposals</Link><Link href="/admin/clients">Clients</Link>
         <div className="language-toggle"><button className={uiLanguage === "en" ? "active" : ""} onClick={() => setUiLanguage("en")}>EN</button><button className={uiLanguage === "ro" ? "active" : ""} onClick={() => setUiLanguage("ro")}>RO</button></div>
       </nav>
 
