@@ -257,3 +257,148 @@ export async function listAnalyticsEvents(options?: { from?: string; to?: string
   const response = await supabaseFetch(`analytics_events?${params.toString()}`);
   return (await response.json()) as AnalyticsEvent[];
 }
+
+export async function findLeadByEmail(email: string) {
+  const params = new URLSearchParams({
+    select: "*",
+    email: `eq.${email.trim().toLowerCase()}`,
+    order: "created_at.desc",
+    limit: "1",
+  });
+  const response = await supabaseFetch(`leads?${params.toString()}`);
+  const rows = (await response.json()) as StoredLead[];
+  return rows[0] ?? null;
+}
+
+export async function updateLeadBookingSync(
+  id: string,
+  patch: Partial<StoredLead> & {
+    cal_booking_uid?: string | null;
+    cal_event_type?: string | null;
+    cal_synced_at?: string | null;
+  }
+) {
+  await supabaseFetch(`leads?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: { Prefer: "return=minimal" },
+    body: JSON.stringify(patch),
+  });
+}
+
+export type CalClientMatch = {
+  id: string;
+  name: string;
+  primary_contact_email: string | null;
+};
+
+export async function findClientByEmail(email: string) {
+  const normalized = email.trim().toLowerCase();
+  const direct = new URLSearchParams({
+    select: "id,name,primary_contact_email",
+    primary_contact_email: `ilike.${normalized}`,
+    limit: "1",
+  });
+  let response = await supabaseFetch(`clients?${direct.toString()}`);
+  let clients = (await response.json()) as CalClientMatch[];
+  if (clients[0]) return clients[0];
+
+  const membership = new URLSearchParams({
+    select: "client_id",
+    email: `ilike.${normalized}`,
+    limit: "1",
+  });
+  response = await supabaseFetch(`client_users?${membership.toString()}`);
+  const memberships = (await response.json()) as Array<{ client_id: string }>;
+  if (!memberships[0]?.client_id) return null;
+
+  const byId = new URLSearchParams({
+    select: "id,name,primary_contact_email",
+    id: `eq.${memberships[0].client_id}`,
+    limit: "1",
+  });
+  response = await supabaseFetch(`clients?${byId.toString()}`);
+  clients = (await response.json()) as CalClientMatch[];
+  return clients[0] ?? null;
+}
+
+export async function upsertCalClientMeeting(meeting: {
+  client_id: string;
+  title: string;
+  starts_at: string;
+  ends_at: string | null;
+  status: "scheduled" | "completed" | "cancelled" | "no_show";
+  meeting_url: string | null;
+  notes: string | null;
+  cal_booking_uid: string;
+  cal_event_type: string | null;
+  attendee_email: string | null;
+  rescheduled_from_uid: string | null;
+  cancellation_reason: string | null;
+  cal_metadata: Record<string, unknown>;
+  cal_synced_at: string;
+}) {
+  const response = await supabaseFetch("client_meetings?on_conflict=cal_booking_uid", {
+    method: "POST",
+    headers: {
+      Prefer: "resolution=merge-duplicates,return=representation",
+    },
+    body: JSON.stringify(meeting),
+  });
+  const rows = (await response.json()) as Array<Record<string, unknown>>;
+  return rows[0] ?? null;
+}
+
+export async function markCalClientMeeting(
+  uid: string,
+  patch: Record<string, unknown>
+) {
+  const response = await supabaseFetch(
+    `client_meetings?cal_booking_uid=eq.${encodeURIComponent(uid)}`,
+    {
+      method: "PATCH",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify(patch),
+    }
+  );
+  const rows = (await response.json()) as Array<Record<string, unknown>>;
+  return rows[0] ?? null;
+}
+
+export async function insertClientActivityEvent(event: {
+  client_id: string;
+  type: string;
+  label: string;
+  metadata?: Record<string, unknown>;
+}) {
+  await supabaseFetch("client_activity", {
+    method: "POST",
+    headers: { Prefer: "return=minimal" },
+    body: JSON.stringify({ ...event, metadata: event.metadata ?? {} }),
+  });
+}
+
+export async function registerCalWebhookEvent(event: {
+  event_key: string;
+  trigger_event: string;
+  booking_uid: string | null;
+  payload: Record<string, unknown>;
+}) {
+  const response = await supabaseFetch("calcom_webhook_events", {
+    method: "POST",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify(event),
+  });
+  const rows = (await response.json()) as Array<Record<string, unknown>>;
+  return rows[0] ?? null;
+}
+
+export async function calWebhookEventExists(eventKey: string) {
+  const params = new URLSearchParams({
+    select: "id",
+    event_key: `eq.${eventKey}`,
+    limit: "1",
+  });
+  const response = await supabaseFetch(`calcom_webhook_events?${params.toString()}`);
+  const rows = (await response.json()) as Array<{ id: string }>;
+  return Boolean(rows[0]);
+}

@@ -86,3 +86,7 @@ All strategy-session buttons open this event in a premium on-site modal. The con
 
 
 See `CALCOM_BILINGUAL_SETUP.md` for the bilingual event configuration.
+
+
+## Cal.com webhook sync
+See `CALCOM_SYNC_SETUP.md` for signed booking synchronization with Lead Cockpit, Analytics and Client Portal.
