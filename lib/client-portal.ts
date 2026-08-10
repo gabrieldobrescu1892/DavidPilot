@@ -99,15 +99,15 @@ export async function createPortalAuthUser(email: string, password: string, name
   return data as { id: string; email: string };
 }
 
-export function portalCookieOptions() {
-  const isProd = process.env.NODE_ENV === "production";
-  const hostname = process.env.VERCEL_PROJECT_PRODUCTION_URL || "";
+export function portalCookieOptions(requestHostname?: string) {
+  const hostname = (requestHostname || "").toLowerCase().split(":")[0];
+  const isDavidPilotDomain = hostname === "davidpilot.com" || hostname === "www.davidpilot.com";
   return {
     httpOnly: true,
-    secure: isProd,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax" as const,
     path: "/",
     maxAge: MAX_AGE,
-    ...(hostname.includes("davidpilot.com") ? { domain: ".davidpilot.com" } : {}),
+    ...(isDavidPilotDomain ? { domain: ".davidpilot.com" } : {}),
   };
 }

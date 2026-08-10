@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await supabaseAuthPassword(email, body.password);
     const response = NextResponse.json({ ok: true });
-    response.cookies.set(portalCookie.name, auth.access_token, { ...portalCookieOptions(), maxAge: Math.min(portalCookie.maxAge, auth.expires_in || portalCookie.maxAge) });
+    response.cookies.set(portalCookie.name, auth.access_token, { ...portalCookieOptions(request.nextUrl.hostname), maxAge: Math.min(portalCookie.maxAge, auth.expires_in || portalCookie.maxAge) });
     return response;
   } catch (error) {
     console.error("Portal login failed", error);
