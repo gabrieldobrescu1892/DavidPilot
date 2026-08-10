@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { insertLead } from "@/lib/supabase-rest";
+import { insertAnalyticsEvent, insertLead } from "@/lib/supabase-rest";
 import { analyzeLead } from "@/lib/lead-intelligence";
 
 export const runtime = "nodejs";
@@ -26,6 +26,8 @@ type LeadRequest = {
   language?: "ro" | "en";
   lead?: LeadData;
   conversation?: Message[];
+  source?: string;
+  session_id?: string;
 };
 
 const requestLog = new Map<string, number[]>();
@@ -167,6 +169,16 @@ export async function POST(request: NextRequest) {
         },
       ],
     });
+
+    await insertAnalyticsEvent({
+      event_name: "lead_submitted",
+      session_id: clean(body.session_id, 120) || null,
+      lead_id: null,
+      language,
+      source: clean(body.source, 80) || "website",
+      page: null,
+      metadata: { qualified: Boolean(lead?.qualified), company },
+    }).catch((error) => console.error("Lead analytics failed", error));
 
     return NextResponse.json({ ok: true });
   } catch (error) {

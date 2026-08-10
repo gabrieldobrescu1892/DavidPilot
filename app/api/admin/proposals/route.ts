@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
-import { insertProposal, listProposals, updateProposal, type ProposalContent } from "@/lib/supabase-rest";
+import { insertAnalyticsEvent, insertProposal, listProposals, updateProposal, type ProposalContent } from "@/lib/supabase-rest";
 
 export const runtime = "nodejs";
 
@@ -117,6 +117,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    await insertAnalyticsEvent({ event_name: "proposal_generated", session_id: null, lead_id: typeof lead.id === "string" ? lead.id : null, language, source: "admin", page: "/admin/proposals", metadata: { title, saved: Boolean(body.save) } }).catch((error) => console.error("Proposal analytics failed", error));
     return NextResponse.json({ content, proposal, title });
   } catch (error) {
     console.error("Proposal generation route failed", error);

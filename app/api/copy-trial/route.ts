@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { insertAnalyticsEvent } from "@/lib/supabase-rest";
 
 export const runtime = "nodejs";
 
@@ -64,6 +65,7 @@ export async function POST(request: NextRequest) {
     }
     const output = text(await response.json()).trim();
     if (!output) return NextResponse.json({ error: "Empty output." }, { status: 502 });
+    await insertAnalyticsEvent({ event_name: "copy_trial_generated", session_id: null, lead_id: null, language, source: "public_copy_studio", page: "/#copy-studio", metadata: { contentType } }).catch((error) => console.error("Copy analytics failed", error));
     return NextResponse.json({ output });
   } catch (error) {
     console.error(error);

@@ -225,3 +225,35 @@ export async function updateProposal(id: string, patch: Partial<Omit<Proposal, "
   const rows = (await response.json()) as Proposal[];
   return rows[0] ?? null;
 }
+
+export type AnalyticsEvent = {
+  id: string;
+  created_at: string;
+  event_name: string;
+  session_id: string | null;
+  lead_id: string | null;
+  language: "en" | "ro" | null;
+  source: string | null;
+  page: string | null;
+  metadata: Record<string, unknown>;
+};
+
+export async function insertAnalyticsEvent(event: Omit<AnalyticsEvent, "id" | "created_at">) {
+  await supabaseFetch("analytics_events", {
+    method: "POST",
+    headers: { Prefer: "return=minimal" },
+    body: JSON.stringify(event),
+  });
+}
+
+export async function listAnalyticsEvents(options?: { from?: string; to?: string; limit?: number }) {
+  const params = new URLSearchParams({
+    select: "*",
+    order: "created_at.asc",
+    limit: String(Math.min(Math.max(options?.limit ?? 5000, 1), 10000)),
+  });
+  if (options?.from) params.append("created_at", `gte.${options.from}`);
+  if (options?.to) params.append("created_at", `lte.${options.to}`);
+  const response = await supabaseFetch(`analytics_events?${params.toString()}`);
+  return (await response.json()) as AnalyticsEvent[];
+}
