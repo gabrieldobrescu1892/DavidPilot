@@ -62,7 +62,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     const updated = await adminPatch("proposals", id, patch);
     await addActivity(clientId, activityType, activityLabel, { proposal_id: id, note: note || null, user_id: user.id });
     if (proposal.lead_id && action === "accept") {
-      await adminSupabase(`leads?id=eq.${encodeURIComponent(proposal.lead_id)}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status: "won", last_activity: now }) }).catch(() => null);
+      await adminSupabase(`leads?id=eq.${encodeURIComponent(proposal.lead_id)}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status: "customer", last_activity: now }) }).catch(() => null);
     }
     if (proposal.lead_id && action === "request_changes") {
       await adminSupabase(`leads?id=eq.${encodeURIComponent(proposal.lead_id)}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status: "proposal_sent", last_activity: now }) }).catch(() => null);
