@@ -111,3 +111,31 @@ export function portalCookieOptions(requestHostname?: string) {
     ...(isDavidPilotDomain ? { domain: ".davidpilot.com" } : {}),
   };
 }
+
+export async function sendPortalPasswordReset(email: string, redirectTo: string) {
+  const { url, publishable } = supabaseConfig();
+  if (!publishable) throw new Error("SUPABASE_PUBLISHABLE_KEY (or SUPABASE_ANON_KEY) is required for password recovery.");
+  const response = await fetch(`${url}/auth/v1/recover?redirect_to=${encodeURIComponent(redirectTo)}`, {
+    method: "POST",
+    cache: "no-store",
+    headers: { apikey: publishable, "Content-Type": "application/json" },
+    body: JSON.stringify({ email: email.trim().toLowerCase() }),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.msg || data.message || data.error_description || "Could not send password reset email.");
+  return data;
+}
+
+export async function updatePortalPassword(accessToken: string, password: string) {
+  const { url, publishable } = supabaseConfig();
+  if (!publishable) throw new Error("SUPABASE_PUBLISHABLE_KEY (or SUPABASE_ANON_KEY) is required for password updates.");
+  const response = await fetch(`${url}/auth/v1/user`, {
+    method: "PUT",
+    cache: "no-store",
+    headers: { apikey: publishable, Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ password }),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.msg || data.message || data.error_description || "Could not update password.");
+  return data;
+}

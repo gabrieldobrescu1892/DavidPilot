@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
-import { adminSupabase } from "@/lib/client-portal";
+import { adminSupabase, sendPortalPasswordReset } from "@/lib/client-portal";
 export const runtime = "nodejs";
 
 type Params = { params: Promise<{ id: string }> };
@@ -86,6 +86,14 @@ export async function POST(request:NextRequest,{params}:Params){
     if(action==="update_support"){
       const ticket=await patch("support_requests",String(body.id),{status:body.status,priority:body.priority,admin_response:body.admin_response||null,updated_at:new Date().toISOString()});
       await activity(clientId,`Support request updated: ${ticket?.subject||"Support request"}`,"support_updated",{support_id:body.id}); return NextResponse.json({ok:true,ticket});
+    }
+    if(action==="send_password_reset"){
+      const clientRows=await json(await adminSupabase(`clients?id=eq.${clientId}&select=primary_contact_email&limit=1`));
+      const email=Array.isArray(clientRows)?clientRows[0]?.primary_contact_email:null;
+      if(!email) return NextResponse.json({error:"Client has no primary contact email."},{status:400});
+      await sendPortalPasswordReset(email,`${request.nextUrl.origin}/portal/reset-password`);
+      await activity(clientId,"Password reset email sent","security_password_reset",{});
+      return NextResponse.json({ok:true});
     }
     if(action==="update_client"){
       const client=await patch("clients",clientId,{name:body.name,primary_contact_name:body.primary_contact_name||null,primary_contact_email:body.primary_contact_email||null,status:body.status,updated_at:new Date().toISOString()});
