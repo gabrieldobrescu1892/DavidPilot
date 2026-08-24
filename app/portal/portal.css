@@ -3,3 +3,78 @@
 /* Proposal acceptance */
 .portal-proposals-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,560px);gap:22px;align-items:start}.proposal-list-item{gap:20px}.proposal-open{border:1px solid rgba(125,175,255,.22);background:#122036;color:#dbeaff;border-radius:12px;padding:11px 15px;font-weight:700;cursor:pointer}.proposal-detail-card{position:sticky;top:24px;border:1px solid rgba(125,175,255,.17);border-radius:20px;background:#0b1525;padding:24px;box-shadow:0 22px 70px rgba(0,0,0,.2)}.proposal-detail-head{display:flex;justify-content:space-between;gap:20px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:18px}.proposal-detail-head span{text-transform:uppercase;letter-spacing:.12em;font-size:11px;color:#77b8ff}.proposal-detail-head h2{font-size:26px;margin:7px 0}.proposal-detail-head p{color:#8fa8c7}.proposal-detail-head>button{width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:transparent;color:white;font-size:22px;cursor:pointer}.proposal-commercial{padding:18px 0;border-bottom:1px solid rgba(255,255,255,.08)}.proposal-commercial small{display:block;color:#7790ae;text-transform:uppercase;font-size:10px;letter-spacing:.12em;margin-bottom:6px}.proposal-commercial strong{font-size:20px}.proposal-content-view section{padding:17px 0;border-bottom:1px solid rgba(255,255,255,.07)}.proposal-content-view h3{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:#80baff;margin:0 0 8px}.proposal-content-view p,.proposal-content-view li{color:#cad8ea;line-height:1.65}.proposal-content-view ul{padding-left:20px}.proposal-decision{padding-top:20px}.proposal-decision label{display:grid;gap:8px;color:#9db1cb;font-size:12px}.proposal-decision textarea{border:1px solid rgba(125,175,255,.18);border-radius:12px;background:#07111e;color:white;padding:12px;resize:vertical}.proposal-decision>div{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}.proposal-decision button{padding:11px 14px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:#142238;color:white;font-weight:700;cursor:pointer}.proposal-decision button.accept{background:#1f6f52;border-color:#2c9b72}.proposal-decision button.decline{color:#ffb4b4}.proposal-response,.proposal-final-status{margin-top:18px;padding:14px;border-radius:12px;background:rgba(100,155,230,.08);color:#c7d7eb}.proposal-response small{color:#80baff;text-transform:uppercase;font-size:10px;letter-spacing:.1em}@media(max-width:1100px){.portal-proposals-layout{grid-template-columns:1fr}.proposal-detail-card{position:static}}@media(max-width:700px){.proposal-detail-card{padding:18px}.proposal-decision>div{display:grid}.proposal-decision button{width:100%}}
 .portal-login-links{display:flex;justify-content:flex-end;align-items:center;margin-top:-7px;margin-bottom:-2px;min-height:20px}.portal-login-links a{font-size:13px;line-height:1.4}.portal-login-links a,.portal-help a{color:#8fbaff;text-decoration:none}.portal-login-links a:hover,.portal-help a:hover{text-decoration:underline}.portal-security{max-width:680px}.security-email{color:var(--p-muted);margin:-8px 0 22px}.security-form{display:grid;gap:16px}.security-form label{display:grid;gap:8px;color:#c8d4e5;font-size:13px;font-weight:650}.security-form input{width:100%;border:1px solid var(--p-border);border-radius:13px;background:#070c14;color:white;padding:13px 14px;outline:none}.security-form input:focus{border-color:rgba(106,168,255,.65);box-shadow:0 0 0 3px rgba(106,168,255,.08)}.security-form button{border:0;border-radius:13px;padding:14px 18px;font-weight:800;background:linear-gradient(135deg,#72aaff,#a8d1ff);color:#04101f;cursor:pointer}.security-form button:disabled{opacity:.6;cursor:not-allowed}
+
+/* Client Portal mobile responsive hardening */
+.portal-shell,.portal-main,.portal-sidebar,.portal-panel,.portal-metrics,.portal-grid,.portal-list-page,.portal-support,.portal-proposals-layout{min-width:0}
+.portal-shell{width:100%;max-width:100%;overflow-x:hidden}
+.portal-main{min-width:0;max-width:100%}
+.activity-row div,.activity-row strong,.project-row div,.portal-item div,.portal-project,.proposal-list-item>div{min-width:0}
+.activity-row strong,.portal-item h2,.portal-item p,.project-title h2,.project-title p,.proposal-list-item h2,.proposal-list-item p{overflow-wrap:anywhere;word-break:normal}
+
+@media(max-width:1000px){
+  html,body{width:100%;max-width:100%;overflow-x:hidden}
+  .portal-shell{display:block;width:100%;max-width:100%}
+  .portal-sidebar{position:sticky;top:0;z-index:80;width:100%;max-width:100%;height:auto;padding:14px 16px 10px;border-right:0;border-bottom:1px solid var(--p-border);background:rgba(5,9,16,.94);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+  .portal-sidebar .portal-brand{width:max-content}
+  .portal-sidebar nav{display:flex;width:100%;max-width:100%;gap:6px;margin-top:12px;overflow-x:auto;overflow-y:hidden;padding-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .portal-sidebar nav::-webkit-scrollbar{display:none}
+  .portal-sidebar nav button{flex:0 0 auto;white-space:nowrap;padding:9px 12px;font-size:12px}
+  .portal-side-foot{display:none}
+  .portal-main{width:100%;max-width:100%;padding:26px 18px calc(52px + env(safe-area-inset-bottom));overflow:hidden}
+  .portal-header{margin-bottom:24px}
+  .portal-header>div:first-child{min-width:0}
+  .portal-header p{overflow-wrap:anywhere}
+  .portal-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .portal-grid,.portal-support,.portal-proposals-layout{grid-template-columns:minmax(0,1fr);width:100%;max-width:100%}
+  .proposal-detail-card{position:relative;top:auto;width:100%;max-width:100%}
+}
+
+@media(max-width:600px){
+  .portal-main{padding:22px 14px calc(44px + env(safe-area-inset-bottom))}
+  .portal-sidebar{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
+  .portal-brand>span{width:34px;height:34px;border-radius:10px}
+  .portal-brand strong{font-size:12px}
+  .portal-brand small{font-size:11px}
+  .portal-sidebar nav button{padding:8px 11px;font-size:11px}
+  .portal-header{gap:12px;margin-bottom:20px}
+  .portal-header h1{font-size:clamp(34px,11vw,44px);line-height:1.02;margin-top:8px}
+  .portal-header p{font-size:14px;line-height:1.45;margin:8px 0 0}
+  .portal-status{padding:7px 10px;font-size:9px;align-self:flex-start}
+  .portal-kicker{font-size:9px;letter-spacing:.16em}
+  .portal-metrics{grid-template-columns:1fr;gap:10px}
+  .portal-metrics article{padding:17px 18px;border-radius:17px}
+  .portal-metrics strong{font-size:29px;margin:6px 0}
+  .portal-grid{gap:12px;margin-top:12px}
+  .portal-panel,.portal-project,.support-form,.support-history{padding:18px;border-radius:17px}
+  .panel-head h2{font-size:19px;margin-bottom:14px}
+  .project-row{grid-template-columns:minmax(0,1fr);gap:9px;padding:13px 0}
+  .project-row b{font-size:13px}
+  .progress{width:100%}
+  .activity-row{gap:10px;padding:13px 0;align-items:flex-start}
+  .activity-row i{flex:0 0 8px}
+  .activity-row strong{display:block;font-size:14px;line-height:1.35}
+  .activity-row small{font-size:11px;line-height:1.35}
+  .portal-project{padding:18px}
+  .project-title{flex-direction:column;gap:8px}
+  .project-title h2,.portal-item h2{font-size:20px}
+  .project-title>strong{font-size:26px}
+  .portal-item{width:100%;max-width:100%;padding:17px 18px;border-radius:17px;gap:14px;align-items:stretch}
+  .portal-item a,.proposal-open{align-self:flex-start}
+  .empty-card{padding:28px 18px}
+  .portal-support{gap:12px}
+  .support-history article>div{align-items:flex-start}
+  .proposal-detail-card{padding:18px;border-radius:17px}
+  .proposal-detail-head{gap:12px}
+  .proposal-detail-head h2{font-size:22px}
+  .proposal-commercial strong{font-size:18px}
+  .proposal-content-view p,.proposal-content-view li{font-size:14px;line-height:1.55}
+  .proposal-decision>div{display:grid;grid-template-columns:1fr;gap:9px}
+  .proposal-decision button{width:100%}
+  .portal-security{width:100%;max-width:100%}
+}
+
+@media(max-width:380px){
+  .portal-main{padding-left:12px;padding-right:12px}
+  .portal-sidebar{padding-left:12px;padding-right:12px}
+  .portal-header h1{font-size:34px}
+}
