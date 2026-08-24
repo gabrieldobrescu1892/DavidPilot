@@ -20,3 +20,7 @@ Add Redirect URLs:
 The recovery request intentionally returns a generic success message so the UI does not reveal whether an email is registered.
 
 No database migration is required. Passwords remain entirely in Supabase Auth.
+
+
+## Login layout patch
+The Forgot password link now sits in the normal form flow between the password field and the sign-in button, right-aligned on desktop and mobile.
