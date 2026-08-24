@@ -43,31 +43,108 @@ function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function requestProposal(model: string, prompt: string) {
+const proposalSchema = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    executive_summary: { type: "string" },
+    current_challenges: { type: "string" },
+    recommended_solution: { type: "string" },
+    scope: { type: "array", items: { type: "string" } },
+    delivery_approach: { type: "string" },
+    expected_outcomes: { type: "array", items: { type: "string" } },
+    assumptions: { type: "array", items: { type: "string" } },
+    next_steps: { type: "string" },
+  },
+  required: [
+    "executive_summary",
+    "current_challenges",
+    "recommended_solution",
+    "scope",
+    "delivery_approach",
+    "expected_outcomes",
+    "assumptions",
+    "next_steps",
+  ],
+} as const;
+
+async function requestProposal(model: string, prompt: string): Promise<ProposalContent> {
   const attempts = [0, 900, 1800];
   let lastDetail = "";
 
   for (const delay of attempts) {
     if (delay) await wait(delay);
+
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
-      headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model, input: prompt, max_output_tokens: 2200 }),
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        input: prompt,
+        max_output_tokens: 4000,
+        text: {
+          format: {
+            type: "json_schema",
+            name: "davidpilot_proposal",
+            strict: true,
+            schema: proposalSchema,
+          },
+        },
+      }),
       cache: "no-store",
     });
 
-    if (response.ok) return response;
+    if (response.ok) {
+      const payload = await response.json();
+      const outputText = extractOutputText(payload);
+
+      if (!outputText) {
+        lastDetail = `Empty structured output: ${JSON.stringify(payload).slice(0, 800)}`;
+        console.error("Proposal model returned no output text", { model, detail: lastDetail });
+        continue;
+      }
+
+      try {
+        return parseJson(outputText);
+      } catch (parseError) {
+        lastDetail = `Invalid structured JSON: ${String(parseError)}; output=${outputText.slice(0, 1200)}`;
+        console.error("Proposal JSON parse failed; retrying", {
+          model,
+          error: parseError,
+          outputLength: outputText.length,
+          outputPreview: outputText.slice(0, 1200),
+        });
+        continue;
+      }
+    }
 
     const detail = await response.text();
     lastDetail = detail;
     let code = "";
-    try { code = (JSON.parse(detail) as OpenAIErrorPayload).error?.code || ""; } catch {}
-    const retryable = response.status === 429 || response.status === 502 || response.status === 503 || code === "server_is_overloaded";
-    console.error("Proposal OpenAI attempt failed", { model, status: response.status, code, detail });
+    try {
+      code = (JSON.parse(detail) as OpenAIErrorPayload).error?.code || "";
+    } catch {}
+
+    const retryable =
+      response.status === 429 ||
+      response.status === 502 ||
+      response.status === 503 ||
+      code === "server_is_overloaded";
+
+    console.error("Proposal OpenAI attempt failed", {
+      model,
+      status: response.status,
+      code,
+      detail,
+    });
+
     if (!retryable) break;
   }
 
-  throw new Error(`OpenAI proposal generation failed for ${model}: ${lastDetail.slice(0, 600)}`);
+  throw new Error(`OpenAI proposal generation failed for ${model}: ${lastDetail.slice(0, 800)}`);
 }
 
 export async function GET() {
@@ -88,16 +165,14 @@ export async function POST(request: NextRequest) {
   try {
     const primary = process.env.OPENAI_PROPOSAL_MODEL || process.env.OPENAI_CHAT_MODEL || "gpt-5-mini";
     const fallback = process.env.OPENAI_PROPOSAL_FALLBACK_MODEL || "gpt-4.1-mini";
-    let response: Response;
+    let content: ProposalContent;
     try {
-      response = await requestProposal(primary, prompt);
+      content = await requestProposal(primary, prompt);
     } catch (primaryError) {
       console.error("Primary proposal model failed", primaryError);
       if (fallback === primary) throw primaryError;
-      response = await requestProposal(fallback, prompt);
+      content = await requestProposal(fallback, prompt);
     }
-
-    const content = parseJson(extractOutputText(await response.json()));
     const company = String(lead.company || "Client");
     const title = language === "ro" ? `Propunere AI pentru ${company}` : `AI Proposal for ${company}`;
     let proposal = null;
