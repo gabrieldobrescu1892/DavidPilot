@@ -191,13 +191,21 @@ export type Proposal = {
   lead_id: string | null;
   title: string;
   language: "en" | "ro";
-  status: "draft" | "review" | "sent" | "accepted" | "declined";
+  status: "draft" | "review" | "sent" | "shared" | "viewed" | "changes_requested" | "accepted" | "declined";
   currency: string;
   investment_min: number | null;
   investment_max: number | null;
   timeline: string | null;
   valid_until: string | null;
   content: ProposalContent;
+  client_id?: string | null;
+  shared_at?: string | null;
+  viewed_at?: string | null;
+  accepted_at?: string | null;
+  declined_at?: string | null;
+  changes_requested_at?: string | null;
+  client_response?: string | null;
+  response_by?: string | null;
 };
 
 export async function listProposals() {

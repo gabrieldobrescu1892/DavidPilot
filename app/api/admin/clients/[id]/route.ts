@@ -30,7 +30,7 @@ export async function GET(_request:NextRequest,{params}:Params){
       adminSupabase(`client_documents?client_id=eq.${id}&select=*&order=created_at.desc`),
       adminSupabase(`support_requests?client_id=eq.${id}&select=*&order=created_at.desc`),
       adminSupabase(`client_activity?client_id=eq.${id}&select=*&order=created_at.desc&limit=50`),
-      adminSupabase(`proposals?select=id,title,status,language,investment_min,investment_max,timeline,created_at,client_id&order=created_at.desc`),
+      adminSupabase(`proposals?select=id,title,status,language,investment_min,investment_max,timeline,created_at,client_id,shared_at,viewed_at,accepted_at,declined_at,changes_requested_at,client_response&order=created_at.desc`),
     ]);
     const clients=await json(clientR);
     return NextResponse.json({
@@ -70,8 +70,18 @@ export async function POST(request:NextRequest,{params}:Params){
       await activity(clientId,`Document shared: ${document.title}`,"document_created",{document_id:document.id}); return NextResponse.json({ok:true,document});
     }
     if(action==="link_proposal"){
-      const proposal=await patch("proposals",String(body.proposal_id),{client_id:clientId,status:body.status||"shared",updated_at:new Date().toISOString()});
-      await activity(clientId,`Proposal shared: ${proposal?.title||"Proposal"}`,"proposal_shared",{proposal_id:body.proposal_id}); return NextResponse.json({ok:true,proposal});
+      const now=new Date().toISOString();
+      const proposal=await patch("proposals",String(body.proposal_id),{client_id:clientId,status:body.status||"shared",shared_at:now,viewed_at:null,accepted_at:null,declined_at:null,changes_requested_at:null,client_response:null,response_by:null,updated_at:now});
+      await activity(clientId,`Proposal shared: ${proposal?.title||"Proposal"}`,"proposal_shared",{proposal_id:body.proposal_id});
+      const sender=process.env.LEAD_SENDER_EMAIL?.trim(); const resend=process.env.RESEND_API_KEY?.trim();
+      if(sender&&resend){
+        const clientRows=await json(await adminSupabase(`clients?id=eq.${clientId}&select=primary_contact_email&limit=1`));
+        const cEmail=Array.isArray(clientRows)?clientRows[0]?.primary_contact_email:null;
+        if(cEmail){
+        await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:`Bearer ${resend}`,"Content-Type":"application/json"},body:JSON.stringify({from:sender,to:[cEmail],subject:`DavidPilot proposal: ${proposal?.title||"New proposal"}`,html:`<p>A new DavidPilot proposal is available in your secure Client Portal.</p><p><a href="https://www.davidpilot.com/portal/login">Open Client Portal</a></p>`})}).catch(error=>console.error("Proposal share email failed",error));
+        }
+      }
+      return NextResponse.json({ok:true,proposal});
     }
     if(action==="update_support"){
       const ticket=await patch("support_requests",String(body.id),{status:body.status,priority:body.priority,admin_response:body.admin_response||null,updated_at:new Date().toISOString()});
