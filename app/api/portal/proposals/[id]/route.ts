@@ -61,11 +61,16 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   try {
     const updated = await adminPatch("proposals", id, patch);
     await addActivity(clientId, activityType, activityLabel, { proposal_id: id, note: note || null, user_id: user.id });
-    if (proposal.lead_id && action === "accept") {
-      await adminSupabase(`leads?id=eq.${encodeURIComponent(proposal.lead_id)}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status: "customer", last_activity: now }) }).catch(() => null);
-    }
-    if (proposal.lead_id && action === "request_changes") {
-      await adminSupabase(`leads?id=eq.${encodeURIComponent(proposal.lead_id)}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status: "proposal_sent", last_activity: now }) }).catch(() => null);
+    if (proposal.lead_id && (action === "accept" || action === "request_changes")) {
+      const leadRows = await adminRows(`leads?id=eq.${encodeURIComponent(proposal.lead_id)}&select=activity,status&limit=1`);
+      const lead = Array.isArray(leadRows) ? leadRows[0] : null;
+      const leadStatus = action === "accept" ? "customer" : "proposal_sent";
+      const leadLabel = action === "accept" ? `Proposal accepted: ${proposal.title}` : `Proposal changes requested: ${proposal.title}`;
+      const nextActivity = [...(Array.isArray(lead?.activity) ? lead.activity : []), { at: now, type: activityType, label: leadLabel }].slice(-100);
+      await adminSupabase(`leads?id=eq.${encodeURIComponent(proposal.lead_id)}`, {
+        method: "PATCH", headers: { Prefer: "return=minimal" },
+        body: JSON.stringify({ status: leadStatus, last_activity: now, activity: nextActivity }),
+      });
     }
     return NextResponse.json({ ok: true, proposal: updated });
   } catch (error) {

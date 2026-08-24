@@ -4,3 +4,19 @@
 /* Lead Cockpit 2.0 */
 .metrics{grid-template-columns:repeat(5,1fr)}
 .pipeline-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:0 0 18px}.pipeline-strip button{border:1px solid rgba(255,255,255,.08);background:#0b192b;color:#8fa4bf;padding:12px;border-radius:14px;cursor:pointer;text-align:left}.pipeline-strip button span{display:block;color:#fff;font-size:19px;font-weight:900;margin-bottom:3px}.pipeline-strip button.active,.pipeline-strip button:hover{background:#15345f;border-color:rgba(88,145,255,.4);color:#fff}.card-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 0;color:#8ca1bb;font-size:11px;border-top:1px solid rgba(255,255,255,.07)}.drawer-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:7px;background:#06111f;border:1px solid rgba(255,255,255,.08);border-radius:14px;margin:18px 0}.drawer-tabs button{border:0;background:transparent;color:#8096b1;border-radius:10px;padding:10px;cursor:pointer;text-transform:capitalize;font-weight:800}.drawer-tabs button.active{background:#17375f;color:#fff}.control-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.control-grid .field{margin:0}.field input{width:100%;border:1px solid rgba(255,255,255,.1);border-radius:13px;background:#0b192b;color:#e8f2ff;padding:13px;outline:none}.timeline{display:grid;gap:0}.timeline article{display:grid;grid-template-columns:18px 1fr;gap:10px;position:relative;padding:0 0 18px}.timeline article:before{content:"";position:absolute;left:5px;top:12px;bottom:-2px;width:1px;background:rgba(103,155,235,.24)}.timeline article:last-child:before{display:none}.timeline i{width:11px;height:11px;border-radius:50%;background:#4f8eff;margin-top:4px;box-shadow:0 0 0 5px rgba(79,142,255,.12)}.timeline strong,.timeline small{display:block}.timeline small{color:#7f93ad;margin-top:4px}.notes-field textarea{min-height:330px}.status.proposal_sent{color:#ffc56f}.status.closed{color:#ff918d}@media(max-width:1100px){.metrics{grid-template-columns:repeat(3,1fr)}.pipeline-strip{grid-template-columns:repeat(3,1fr)}}@media(max-width:680px){.metrics{grid-template-columns:1fr 1fr}.pipeline-strip{grid-template-columns:1fr 1fr}.control-grid{grid-template-columns:1fr}.drawer-tabs{grid-template-columns:1fr 1fr}.card-meta{grid-template-columns:1fr}}
+
+/* Proposal lifecycle visibility in Lead Cockpit */
+.proposal-status{display:inline-flex;align-items:center;padding:7px 9px;border-radius:999px;font-style:normal;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;background:rgba(255,255,255,.07);color:#9fb3ca}
+.proposal-status.shared,.proposal-status.viewed{color:#8eb7ff;background:rgba(78,141,255,.12)}
+.proposal-status.accepted{color:#6ee0a7;background:rgba(56,191,128,.12);border:1px solid rgba(56,191,128,.25)}
+.proposal-status.changes_requested{color:#ffc56f;background:rgba(255,177,61,.12)}
+.proposal-status.declined{color:#ff918d;background:rgba(255,83,83,.12)}
+.lead-proposal-panel{display:grid;grid-template-columns:1fr auto;gap:8px 14px;align-items:center;margin:18px 0;padding:16px;border:1px solid rgba(255,255,255,.09);border-radius:15px;background:#0b1a2d}
+.lead-proposal-panel.accepted{border-color:rgba(56,191,128,.28);background:rgba(42,164,111,.07)}
+.lead-proposal-panel>div span,.lead-proposal-panel>div strong,.lead-proposal-panel small{display:block}
+.lead-proposal-panel>div span{font-size:10px;color:#7890ad;text-transform:uppercase;letter-spacing:.08em}
+.lead-proposal-panel>div strong{margin-top:5px}
+.lead-proposal-panel small{grid-column:1/-1;color:#8ca1bb}
+.lead-proposal-panel p{grid-column:1/-1;margin:2px 0 0;color:#c3d2e4;line-height:1.5}
+.lead-proposal-panel a{grid-column:1/-1;color:#7fb0ff;text-decoration:none;font-weight:800;font-size:12px}
+@media(max-width:680px){.lead-proposal-panel{grid-template-columns:1fr}.lead-proposal-panel .proposal-status{justify-self:start}}
