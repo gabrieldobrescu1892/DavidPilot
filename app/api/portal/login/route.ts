@@ -14,6 +14,10 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     console.error("Portal login failed", error);
+    const message = error instanceof Error ? error.message : "";
+    const timedOut = error instanceof Error && (error.name === "AbortError" || /aborted|timeout/i.test(message));
+    if (timedOut) return NextResponse.json({ error: "Authentication service timed out. Please try again." }, { status: 504 });
+    if (/configuration|SUPABASE_/i.test(message)) return NextResponse.json({ error: "Client authentication is temporarily unavailable." }, { status: 503 });
     return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
   }
 }

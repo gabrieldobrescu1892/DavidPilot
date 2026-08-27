@@ -13,6 +13,16 @@ function supabaseConfig() {
 
 export const portalCookie = { name: ACCESS_COOKIE, maxAge: MAX_AGE };
 
+async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit = {}, timeoutMs = 12000) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function portalAccessToken() {
   const store = await cookies();
   return store.get(ACCESS_COOKIE)?.value || null;
@@ -21,7 +31,7 @@ export async function portalAccessToken() {
 export async function supabaseAuthPassword(email: string, password: string) {
   const { url, publishable } = supabaseConfig();
   if (!publishable) throw new Error("SUPABASE_PUBLISHABLE_KEY (or SUPABASE_ANON_KEY) is required for Client Portal authentication.");
-  const response = await fetch(`${url}/auth/v1/token?grant_type=password`, {
+  const response = await fetchWithTimeout(`${url}/auth/v1/token?grant_type=password`, {
     method: "POST",
     cache: "no-store",
     headers: { apikey: publishable, "Content-Type": "application/json" },
@@ -35,7 +45,7 @@ export async function supabaseAuthPassword(email: string, password: string) {
 export async function supabaseAuthUser(accessToken: string) {
   const { url, publishable } = supabaseConfig();
   if (!publishable) return null;
-  const response = await fetch(`${url}/auth/v1/user`, {
+  const response = await fetchWithTimeout(`${url}/auth/v1/user`, {
     cache: "no-store",
     headers: { apikey: publishable, Authorization: `Bearer ${accessToken}` },
   });
@@ -53,7 +63,7 @@ export async function portalUser() {
 export async function portalRest(path: string, accessToken: string, init: RequestInit = {}) {
   const { url, publishable } = supabaseConfig();
   if (!publishable) throw new Error("SUPABASE_PUBLISHABLE_KEY (or SUPABASE_ANON_KEY) is required for Client Portal RLS requests.");
-  const response = await fetch(`${url}/rest/v1/${path}`, {
+  const response = await fetchWithTimeout(`${url}/rest/v1/${path}`, {
     ...init,
     cache: "no-store",
     headers: {
@@ -73,7 +83,7 @@ export async function portalRest(path: string, accessToken: string, init: Reques
 export async function adminSupabase(path: string, init: RequestInit = {}) {
   const { url, secret } = supabaseConfig();
   const legacyJwt = secret.split(".").length === 3;
-  const response = await fetch(`${url}/rest/v1/${path}`, {
+  const response = await fetchWithTimeout(`${url}/rest/v1/${path}`, {
     ...init,
     cache: "no-store",
     headers: { apikey: secret, ...(legacyJwt ? { Authorization: `Bearer ${secret}` } : {}), "Content-Type": "application/json", ...init.headers },
@@ -88,7 +98,7 @@ export async function adminSupabase(path: string, init: RequestInit = {}) {
 export async function createPortalAuthUser(email: string, password: string, name: string) {
   const { url, secret } = supabaseConfig();
   const legacyJwt = secret.split(".").length === 3;
-  const response = await fetch(`${url}/auth/v1/admin/users`, {
+  const response = await fetchWithTimeout(`${url}/auth/v1/admin/users`, {
     method: "POST",
     cache: "no-store",
     headers: { apikey: secret, ...(legacyJwt ? { Authorization: `Bearer ${secret}` } : {}), "Content-Type": "application/json" },
@@ -115,7 +125,7 @@ export function portalCookieOptions(requestHostname?: string) {
 export async function sendPortalPasswordReset(email: string, redirectTo: string) {
   const { url, publishable } = supabaseConfig();
   if (!publishable) throw new Error("SUPABASE_PUBLISHABLE_KEY (or SUPABASE_ANON_KEY) is required for password recovery.");
-  const response = await fetch(`${url}/auth/v1/recover?redirect_to=${encodeURIComponent(redirectTo)}`, {
+  const response = await fetchWithTimeout(`${url}/auth/v1/recover?redirect_to=${encodeURIComponent(redirectTo)}`, {
     method: "POST",
     cache: "no-store",
     headers: { apikey: publishable, "Content-Type": "application/json" },
@@ -129,7 +139,7 @@ export async function sendPortalPasswordReset(email: string, redirectTo: string)
 export async function updatePortalPassword(accessToken: string, password: string) {
   const { url, publishable } = supabaseConfig();
   if (!publishable) throw new Error("SUPABASE_PUBLISHABLE_KEY (or SUPABASE_ANON_KEY) is required for password updates.");
-  const response = await fetch(`${url}/auth/v1/user`, {
+  const response = await fetchWithTimeout(`${url}/auth/v1/user`, {
     method: "PUT",
     cache: "no-store",
     headers: { apikey: publishable, Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
