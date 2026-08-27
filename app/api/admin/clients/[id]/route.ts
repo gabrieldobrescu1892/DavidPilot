@@ -22,7 +22,7 @@ export async function GET(_request:NextRequest,{params}:Params){
   if(!(await isAdminAuthenticated())) return NextResponse.json({error:"Unauthorized."},{status:401});
   const {id}=await params;
   try{
-    const [clientR,projectsR,milestonesR,meetingsR,documentsR,supportR,activityR,proposalsR] = await Promise.all([
+    const [clientR,projectsR,milestonesR,meetingsR,documentsR,supportR,activityR,proposalsR,onboardingR] = await Promise.all([
       adminSupabase(`clients?id=eq.${id}&select=*,client_users(id,email,role,created_at)`),
       adminSupabase(`projects?client_id=eq.${id}&select=*&order=created_at.desc`),
       adminSupabase(`project_milestones?client_id=eq.${id}&select=*&order=sort_order.asc,created_at.asc`),
@@ -31,12 +31,13 @@ export async function GET(_request:NextRequest,{params}:Params){
       adminSupabase(`support_requests?client_id=eq.${id}&select=*&order=created_at.desc`),
       adminSupabase(`client_activity?client_id=eq.${id}&select=*&order=created_at.desc&limit=50`),
       adminSupabase(`proposals?select=id,title,status,language,investment_min,investment_max,timeline,created_at,client_id,shared_at,viewed_at,accepted_at,declined_at,changes_requested_at,client_response&order=created_at.desc`),
+      adminSupabase(`onboarding_tasks?client_id=eq.${id}&select=*&order=sort_order.asc,created_at.asc`),
     ]);
     const clients=await json(clientR);
     return NextResponse.json({
       client:Array.isArray(clients)?clients[0]:clients,
       projects:await json(projectsR), milestones:await json(milestonesR), meetings:await json(meetingsR),
-      documents:await json(documentsR), support:await json(supportR), activity:await json(activityR), proposals:await json(proposalsR)
+      documents:await json(documentsR), support:await json(supportR), activity:await json(activityR), proposals:await json(proposalsR), onboarding:await json(onboardingR)
     });
   }catch(error){ console.error("Client detail load failed",error); return NextResponse.json({error:"Could not load client workspace."},{status:502}); }
 }
@@ -45,6 +46,17 @@ export async function POST(request:NextRequest,{params}:Params){
   if(!(await isAdminAuthenticated())) return NextResponse.json({error:"Unauthorized."},{status:401});
   const {id:clientId}=await params; const body=await request.json().catch(()=>({})); const action=String(body.action||"");
   try{
+    if(action==="update_onboarding_task"){
+      const completed=body.status==="completed";
+      const task=await patch("onboarding_tasks",String(body.id),{status:body.status,completed_at:completed?(body.completed_at||new Date().toISOString()):null,updated_at:new Date().toISOString()});
+      await activity(clientId,`Onboarding task ${completed?"completed":"updated"}: ${task?.title||body.title}`,"onboarding_task_updated",{task_id:body.id,status:body.status});
+      const tasksR=await adminSupabase(`onboarding_tasks?client_id=eq.${clientId}&select=status`); const tasks=await json(tasksR);
+      if(Array.isArray(tasks)&&tasks.length&&tasks.every((x:any)=>x.status==="completed")){
+        await adminSupabase(`clients?id=eq.${clientId}`,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status:"active",updated_at:new Date().toISOString()})});
+        await activity(clientId,"Onboarding completed · client moved to active","onboarding_completed",{});
+      }
+      return NextResponse.json({ok:true,task});
+    }
     if(action==="create_project"){
       const project=await insert("projects",{client_id:clientId,name:String(body.name||"").trim(),description:String(body.description||"").trim()||null,status:body.status||"planning",progress:Number(body.progress||0),starts_at:body.starts_at||null,target_date:body.target_date||null});
       await activity(clientId,`Project created: ${project.name}`,"project_created",{project_id:project.id}); return NextResponse.json({ok:true,project});

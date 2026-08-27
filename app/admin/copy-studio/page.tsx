@@ -129,7 +129,7 @@ export default function CopyStudioPage() {
         <Link className="active" href="/admin/copy-studio">AI Copy Studio</Link>
         <Link href="/admin/proposals">Proposals</Link><Link href="/admin/clients">Clients</Link>
         <div className="language-toggle"><button className={uiLanguage === "en" ? "active" : ""} onClick={() => setUiLanguage("en")}>EN</button><button className={uiLanguage === "ro" ? "active" : ""} onClick={() => setUiLanguage("ro")}>RO</button></div>
-      </nav>
+      <Link href="/admin/onboarding">Onboarding</Link></nav>
 
       <header className="copy-header">
         <div><span className="copy-eyebrow">DAVIDPILOT · CONTENT INTELLIGENCE</span><h1>{t.title}</h1><p>{t.subtitle}</p></div>
